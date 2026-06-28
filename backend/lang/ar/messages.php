@@ -1,0 +1,57 @@
+<?php
+
+return [
+    'deleted' => 'تم الحذف',
+    'logged_out' => 'تم تسجيل الخروج',
+    'password_updated' => 'تم تحديث كلمة المرور',
+    'unauthorized' => 'غير مصرح.',
+
+    'admin_must_use_portal' => 'يجب على حسابات المشرفين استخدام بوابة الإدارة.',
+    'admin_use_portal' => 'حسابات المشرفين تستخدم بوابة الإدارة.',
+    'admin_access_required' => 'مطلوب صلاحية المشرف.',
+    'admin_sign_in_portal' => 'يجب على حسابات المشرفين تسجيل الدخول عبر بوابة الإدارة على /admin/login.',
+    'invalid_admin_credentials' => 'بيانات اعتماد المشرف غير صحيحة.',
+    'current_password_incorrect' => 'كلمة المرور الحالية غير صحيحة.',
+    'invalid_credentials' => 'بيانات الاعتماد المقدمة غير صحيحة.',
+
+    'qr_limit_reached' => 'تم الوصول لحد رموز QR. قم بترقية خطتك.',
+    'short_link_limit_reached' => 'تم الوصول لحد الروابط المختصرة.',
+    'business_card_limit_reached' => 'تم الوصول لحد بطاقات العمل.',
+    'digital_page_limit_reached' => 'تم الوصول لحد الصفحات الرقمية. قم بترقية خطتك.',
+    'digital_menu_limit_reached' => 'تم الوصول لحد القوائم الرقمية. قم بترقية خطتك.',
+    'digital_badge_limit_reached' => 'تم الوصول لحد الشارات الرقمية. قم بترقية خطتك.',
+    'digital_ticket_limit_reached' => 'تم الوصول لحد التذاكر الرقمية. قم بترقية خطتك.',
+    'scan_to_win_limit_reached' => 'تم الوصول لحد امسح واربح. قم بترقية خطتك.',
+    'custom_domains_pro_required' => 'النطاقات المخصصة تتطلب خطة Pro أو Business.',
+
+    'card_not_found' => 'البطاقة غير موجودة',
+    'card_not_published' => 'هذه البطاقة غير منشورة',
+    'page_not_found' => 'الصفحة غير موجودة',
+    'page_not_published' => 'هذه الصفحة غير منشورة',
+    'menu_not_found' => 'القائمة غير موجودة',
+    'menu_not_published' => 'هذه القائمة غير منشورة',
+    'badge_not_found' => 'الشارة غير موجودة',
+    'badge_not_published' => 'هذه الشارة غير منشورة',
+    'ticket_not_found' => 'التذكرة غير موجودة',
+    'ticket_not_published' => 'هذه التذكرة غير منشورة',
+    'campaign_not_found' => 'الحملة غير موجودة',
+    'campaign_not_published' => 'هذه الحملة غير منشورة',
+    'campaign_not_active' => 'هذه الحملة غير نشطة',
+
+    'campaign_not_started' => 'الحملة لم تبدأ بعد.',
+    'campaign_ended' => 'انتهت الحملة.',
+    'daily_play_limit' => 'تم الوصول للحد اليومي. حاول مرة أخرى غداً.',
+    'default_win_message' => 'تهانينا! لقد فزت!',
+    'default_lose_message' => 'حظاً أوفر في المرة القادمة!',
+
+    'domain_already_verified' => 'النطاق موثّق بالفعل.',
+    'verify_before_primary' => 'تحقق من النطاق قبل تعيينه كأساسي.',
+    'domain_verified' => 'تم التحقق من النطاق بنجاح.',
+    'domain_verification_bypassed' => 'تم تجاوز التحقق من النطاق (وضع التطوير).',
+    'domain_cname_not_detected' => 'لم يتم اكتشاف سجل CNAME بعد. وجّه :domain إلى :target حتى تعمل الروابط بشكل صحيح.',
+    'domain_txt_not_found' => 'لم يتم العثور على سجل TXT للتحقق عند :host. أضف سجل TXT بالقيمة: :token. قد تستغرق تغييرات DNS حتى 48 ساعة للانتشار.',
+    'domain_cname_but_txt_missing' => 'تم تكوين CNAME لكن سجل TXT للتحقق مفقود. أضف TXT عند :host بالقيمة: :token.',
+
+    'ai_token_required' => 'أضف HUGGINGFACE_API_TOKEN إلى backend .env لتفعيل إنشاء الصور بالذكاء الاصطناعي.',
+    'invalid_format' => 'تنسيق غير صالح',
+];

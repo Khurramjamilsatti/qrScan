@@ -1,0 +1,57 @@
+<?php
+
+return [
+    'deleted' => 'Deleted',
+    'logged_out' => 'Logged out',
+    'password_updated' => 'Password updated',
+    'unauthorized' => 'Unauthorized.',
+
+    'admin_must_use_portal' => 'Admin accounts must use the admin portal.',
+    'admin_use_portal' => 'Admin accounts use the admin portal.',
+    'admin_access_required' => 'Admin access required.',
+    'admin_sign_in_portal' => 'Admin accounts must sign in through the admin portal at /admin/login.',
+    'invalid_admin_credentials' => 'Invalid admin credentials.',
+    'current_password_incorrect' => 'The current password is incorrect.',
+    'invalid_credentials' => 'The provided credentials are incorrect.',
+
+    'qr_limit_reached' => 'QR code limit reached. Upgrade your plan.',
+    'short_link_limit_reached' => 'Short link limit reached.',
+    'business_card_limit_reached' => 'Business card limit reached.',
+    'digital_page_limit_reached' => 'Digital page limit reached. Upgrade your plan.',
+    'digital_menu_limit_reached' => 'Digital menu limit reached. Upgrade your plan.',
+    'digital_badge_limit_reached' => 'Digital badge limit reached. Upgrade your plan.',
+    'digital_ticket_limit_reached' => 'Digital ticket limit reached. Upgrade your plan.',
+    'scan_to_win_limit_reached' => 'Scan to Win limit reached. Upgrade your plan.',
+    'custom_domains_pro_required' => 'Custom domains require Pro or Business plan.',
+
+    'card_not_found' => 'Card not found',
+    'card_not_published' => 'This card is not published',
+    'page_not_found' => 'Page not found',
+    'page_not_published' => 'This page is not published',
+    'menu_not_found' => 'Menu not found',
+    'menu_not_published' => 'This menu is not published',
+    'badge_not_found' => 'Badge not found',
+    'badge_not_published' => 'This badge is not published',
+    'ticket_not_found' => 'Ticket not found',
+    'ticket_not_published' => 'This ticket is not published',
+    'campaign_not_found' => 'Campaign not found',
+    'campaign_not_published' => 'This campaign is not published',
+    'campaign_not_active' => 'This campaign is not active',
+
+    'campaign_not_started' => 'Campaign has not started yet.',
+    'campaign_ended' => 'Campaign has ended.',
+    'daily_play_limit' => 'Daily play limit reached. Try again tomorrow.',
+    'default_win_message' => 'Congratulations! You won!',
+    'default_lose_message' => 'Better luck next time!',
+
+    'domain_already_verified' => 'Domain is already verified.',
+    'verify_before_primary' => 'Verify domain before setting as primary.',
+    'domain_verified' => 'Domain verified successfully.',
+    'domain_verification_bypassed' => 'Domain verification bypassed (development mode).',
+    'domain_cname_not_detected' => 'CNAME record not detected yet. Point :domain to :target so links resolve correctly.',
+    'domain_txt_not_found' => 'TXT verification record not found at :host. Add a TXT record with value: :token. DNS changes can take up to 48 hours to propagate.',
+    'domain_cname_but_txt_missing' => 'CNAME is configured but the TXT verification record is missing. Add TXT at :host with value: :token.',
+
+    'ai_token_required' => 'Add HUGGINGFACE_API_TOKEN to backend .env to enable AI image generation.',
+    'invalid_format' => 'Invalid format',
+];
