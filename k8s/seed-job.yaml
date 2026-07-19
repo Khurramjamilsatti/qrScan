@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: qrscan-db-seed
+  namespace: qrscan
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: ghcr-secret
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:16-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h postgres -U "$DB_USERNAME" -d qrscan; do
+                sleep 2
+              done
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: DB_USERNAME
+      containers:
+        - name: seed
+          image: ghcr.io/khurramjamilsatti/qrscan-api:latest
+          command: ['php', 'artisan', 'db:seed', '--force']
+          envFrom:
+            - configMapRef:
+                name: qrscan-config
+          env:
+            - name: APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: APP_KEY
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: DB_PASSWORD
+            - name: RUN_MIGRATIONS
+              value: "false"

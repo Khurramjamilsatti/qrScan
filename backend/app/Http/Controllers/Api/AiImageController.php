@@ -32,7 +32,7 @@ class AiImageController extends Controller
 
         $validated = $request->validate([
             'prompt' => 'required|string|max:500',
-            'context' => 'nullable|in:qr-background,qr-logo,card-photo,card-background',
+            'context' => 'nullable|in:qr-background,qr-logo,card-photo,card-background,form-header,form-logo,form-background,page-background,portfolio,gallery,prize-gift,campaign-logo,giveaway-background,event-logo,event-background,badge-logo,achievement-badge,certificate-background,restaurant-logo,restaurant-interior,food-photo',
         ]);
 
         try {
@@ -51,7 +51,7 @@ class AiImageController extends Controller
     {
         $request->validate([
             'image' => 'required|image|max:5120',
-            'folder' => 'nullable|in:logos,backgrounds,photos',
+            'folder' => ['nullable', 'string', 'max:50', 'regex:/^[a-z0-9_-]+$/'],
         ]);
 
         $folder = $request->input('folder', 'uploads');

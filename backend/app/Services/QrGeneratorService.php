@@ -9,7 +9,10 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode as QrGenerator;
 
 class QrGeneratorService
 {
-    public function __construct(private DomainUrlService $domains) {}
+    public function __construct(
+        private DomainUrlService $domains,
+        private QrSecurityService $security,
+    ) {}
 
     public function generate(QrCode $qrCode, string $format = 'png'): string
     {
@@ -18,6 +21,7 @@ class QrGeneratorService
             $qrCode->code,
             $qrCode->custom_domain_id
         );
+        $url = $this->security->signUrl($url, $qrCode);
 
         $generator = QrGenerator::format($format === 'svg' ? 'svg' : 'png')
             ->size($qrCode->size ?? 400)

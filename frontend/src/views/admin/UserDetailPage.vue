@@ -128,6 +128,7 @@ const statCards = computed(() => {
     { icon: '🏅', label: t('dashboard.statBadges'), value: s.digital_badges, used: s.digital_badges, limit: l.digital_badges, color: '#6b4fa0' },
     { icon: '🎫', label: t('dashboard.statTickets'), value: s.digital_tickets, used: s.digital_tickets, limit: l.digital_tickets, color: '#e8655a' },
     { icon: '🎰', label: t('dashboard.statScanToWin'), value: s.scan_to_win, used: s.scan_to_win, limit: l.scan_to_win, color: '#e8b84a' },
+    { icon: '📝', label: t('dashboard.statForms'), value: s.forms, used: s.forms, limit: l.forms, color: '#673ab7' },
     { icon: '📈', label: t('dashboard.statTotalScans'), value: s.total_scans, color: '#e8655a' },
     { icon: '🖱', label: t('admin.statTotalClicks'), value: s.total_clicks, color: '#e8b84a' },
     { icon: '👁', label: t('admin.statTotalViews'), value: s.total_views, color: '#6b4fa0' },
@@ -149,6 +150,7 @@ const resourceSections = computed(() => {
     { key: 'digital_badges', label: t('dashboard.statBadges'), items: r.digital_badges || [], name: i => i.title, slug: i => i.slug, metric: i => t('admin.metricViews', { count: i.view_count }), active: i => i.is_active },
     { key: 'digital_tickets', label: t('dashboard.statTickets'), items: r.digital_tickets || [], name: i => i.title, slug: i => i.slug, metric: i => t('admin.metricViews', { count: i.view_count }), active: i => i.is_active },
     { key: 'scan_to_win', label: t('dashboard.statScanToWin'), items: r.scan_to_win || [], name: i => i.name || i.title, slug: i => i.slug, metric: i => t('admin.metricViews', { count: i.view_count || 0 }), active: i => i.is_active },
+    { key: 'forms', label: t('dashboard.statForms'), items: r.forms || [], name: i => i.title, slug: i => i.slug, metric: i => t('forms.responseCount', { count: i.submission_count || 0 }), active: i => i.is_active },
   ].filter(s => s.items.length > 0)
 })
 

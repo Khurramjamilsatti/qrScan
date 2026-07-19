@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: linear-gradient(180deg, #14532d, #052e16); color: #f0fdf4; min-height: 100vh; }
+  .invite { max-width: 400px; margin: 0 auto; background: rgba(255,255,255,.06); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(8px); }
+  .header { padding: 32px 20px; min-height: 120px; color: #fff; text-align: center; {{{headerBgStyle}}} }
+  .header-inner { position: relative; z-index: 1; }
+  .sparkle { font-size: 32px; margin-bottom: 8px; }
+  h1 { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 14px; margin-top: 8px; opacity: .9; }
+  .meta { padding: 14px 18px; font-size: 12px; text-align: center; opacity: .85; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .sections { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+  .block-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #fbbf24; margin-bottom: 8px; }
+  .btn { display: inline-block; padding: 10px 20px; border-radius: 999px; font-weight: 700; text-decoration: none; font-size: 13px; }
+  .btn--primary { background: linear-gradient(135deg, #fbbf24, {{themeColor}}); color: #14532d; }
+  .btn--outline { border: 2px solid rgba(255,255,255,.3); color: #fff; }
+  .countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+  .countdown__num { font-size: 22px; font-weight: 800; color: #fbbf24; }
+  .countdown__label { font-size: 9px; opacity: .7; text-transform: uppercase; }
+  .schedule-item, .guest-msg { padding: 10px; border-radius: 10px; background: rgba(255,255,255,.06); font-size: 12px; margin-bottom: 6px; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .gallery-item { aspect-ratio: 1; border-radius: 10px; background: rgba(255,255,255,.1) center/cover no-repeat; }
+  .registry-link { padding: 8px 14px; border-radius: 999px; background: rgba(251,191,36,.2); color: #fbbf24; text-decoration: none; font-size: 12px; display: inline-block; margin: 4px; }
+  .video-embed { width: 100%; aspect-ratio: 16/9; border: none; border-radius: 10px; }
+  .scratch-card { border-radius: 16px; overflow: hidden; cursor: pointer; }
+  .scratch-card__cover { padding: 36px; text-align: center; background: linear-gradient(135deg, #dc2626, #fbbf24); color: #fff; font-weight: 800; }
+  .scratch-card__inner { display: none; padding: 24px; text-align: center; }
+  .scratch-card.revealed .scratch-card__cover { display: none; }
+  .scratch-card.revealed .scratch-card__inner { display: block; }
+  .footer { padding: 10px 16px; font-size: 10px; font-family: monospace; opacity: .5; word-break: break-all; }
+  {{{embedStyles}}}
+</style>
+</head>
+<body>
+  <div class="invite invite--holiday tpl-{{template}}">
+    <div class="header"><div class="header-inner"><div class="sparkle">✨</div><h1>{{title}}</h1>{{#if subtitle}}<p class="subtitle">{{subtitle}}</p>{{/if}}</div></div>
+    {{{metaHtml}}}
+    <div class="sections">{{{sectionsHtml}}}</div>
+    <div class="footer">{{inviteUrl}}</div>
+  </div>
+</body>
+</html>

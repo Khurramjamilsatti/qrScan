@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #f3f4f6; color: #374151; }
+  .invite { max-width: 400px; margin: 0 auto; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb; }
+  .header { padding: 32px 24px; min-height: 110px; color: #fff; text-align: center; {{{headerBgStyle}}} }
+  h1 { font-size: 22px; font-weight: 400; letter-spacing: .06em; }
+  .subtitle { font-size: 13px; margin-top: 10px; font-family: system-ui, sans-serif; opacity: .9; }
+  .meta { padding: 16px 24px; text-align: center; font-size: 12px; color: #6b7280; font-family: system-ui, sans-serif; border-bottom: 1px solid #f3f4f6; }
+  .sections { padding: 18px 24px; display: flex; flex-direction: column; gap: 16px; font-family: system-ui, sans-serif; }
+  .block-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: #6b7280; margin-bottom: 8px; text-align: center; }
+  .btn { display: inline-block; padding: 10px 18px; border-radius: 4px; font-size: 12px; text-decoration: none; }
+  .btn--primary { background: #4b5563; color: #fff; }
+  .btn--outline { border: 1px solid #d1d5db; color: #4b5563; }
+  .countdown { display: none; }
+  .schedule-item { padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 12px; text-align: center; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .gallery-item { aspect-ratio: 4/3; background: #e5e7eb center/cover no-repeat; }
+  .guest-msg { padding: 12px; font-size: 12px; font-style: italic; text-align: center; border-top: 1px solid #f3f4f6; }
+  .video-embed { width: 100%; aspect-ratio: 16/9; border: none; }
+  .footer { padding: 10px 16px; font-size: 10px; font-family: monospace; color: #9ca3af; word-break: break-all; }
+  {{{embedStyles}}}
+</style>
+</head>
+<body>
+  <div class="invite invite--memorial tpl-{{template}}">
+    <div class="header"><h1>{{title}}</h1>{{#if subtitle}}<p class="subtitle">{{subtitle}}</p>{{/if}}</div>
+    {{{metaHtml}}}
+    <div class="sections">{{{sectionsHtml}}}</div>
+    <div class="footer">{{inviteUrl}}</div>
+  </div>
+</body>
+</html>

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { isAuthPage, isPublicAppPath } from '../utils/publicRoutes'
 
 const api = axios.create({
   baseURL: '/api',
@@ -20,7 +21,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       const path = window.location.pathname
-      if (!path.startsWith('/login') && !path.startsWith('/register') && !path.startsWith('/admin')) {
+      if (!isPublicAppPath(path) && !isAuthPage(path)) {
         window.location.href = '/login'
       }
     }

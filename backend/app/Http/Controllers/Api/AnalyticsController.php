@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AnalyticsEvent;
+use App\Services\QrAiAnalyticsService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AnalyticsController extends Controller
 {
+    public function __construct(private QrAiAnalyticsService $aiAnalytics) {}
+
     public function show(Request $request, string $type, int $id): JsonResponse
     {
         $model = $this->resolveModel($type, $id);
@@ -34,6 +37,16 @@ class AnalyticsController extends Controller
         ]);
     }
 
+    public function insights(Request $request, string $type, int $id): JsonResponse
+    {
+        $model = $this->resolveModel($type, $id);
+        $this->authorizeOwner($request, $model);
+
+        $eventType = in_array($type, ['short-links'], true) ? 'click' : 'scan';
+
+        return response()->json($this->aiAnalytics->insights($model, $eventType));
+    }
+
     private function resolveModel(string $type, int $id): Model
     {
         return match ($type) {
@@ -42,9 +55,12 @@ class AnalyticsController extends Controller
             'business-cards' => \App\Models\BusinessCard::findOrFail($id),
             'digital-pages' => \App\Models\DigitalPage::findOrFail($id),
             'digital-menus' => \App\Models\DigitalMenu::findOrFail($id),
+            'digital-events' => \App\Models\DigitalEvent::findOrFail($id),
             'digital-badges' => \App\Models\DigitalBadge::findOrFail($id),
+            'digital-certificates' => \App\Models\DigitalCertificate::findOrFail($id),
             'digital-tickets' => \App\Models\DigitalTicket::findOrFail($id),
             'scan-to-win' => \App\Models\ScanToWinCampaign::findOrFail($id),
+            'forms' => \App\Models\Form::findOrFail($id),
             default => abort(404),
         };
     }

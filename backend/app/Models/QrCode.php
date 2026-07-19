@@ -11,9 +11,25 @@ class QrCode extends Model
 {
     protected $fillable = [
         'user_id', 'custom_domain_id', 'name', 'code', 'destination_url',
+        'funnel_id', 'routing_rules', 'security', 'expires_at', 'max_scans', 'signing_secret',
         'foreground_color', 'background_color', 'logo_path', 'background_image_path',
         'size', 'error_correction', 'margin', 'dot_style', 'qr_shape', 'corner_style', 'frame_style', 'is_active',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'routing_rules' => 'array',
+            'security' => 'array',
+            'expires_at' => 'datetime',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    public function funnel(): BelongsTo
+    {
+        return $this->belongsTo(QrFunnel::class, 'funnel_id');
+    }
 
     public function customDomain(): BelongsTo
     {

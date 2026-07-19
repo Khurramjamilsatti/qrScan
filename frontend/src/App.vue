@@ -10,6 +10,7 @@
 import { onMounted } from 'vue'
 import { useAuthStore } from './stores/auth'
 import { applyDocumentLocale } from './i18n'
+import { isPublicAppPath } from './utils/publicRoutes'
 import AppDialog from './components/ui/AppDialog.vue'
 import LanguageSwitcher from './components/ui/LanguageSwitcher.vue'
 
@@ -18,7 +19,9 @@ const auth = useAuthStore()
 onMounted(() => {
   const saved = localStorage.getItem('qrscan-locale') || 'en'
   applyDocumentLocale(saved)
-  auth.fetchUser()
+  if (!isPublicAppPath(window.location.pathname)) {
+    auth.fetchUser()
+  }
 })
 </script>
 

@@ -77,7 +77,7 @@ class DigitalPageController extends Controller
         return $request->validate([
             'slug' => ['required', 'string', 'alpha_dash', 'min:3', 'max:50', Rule::unique('digital_pages')->ignore($ignoreId)],
             'title' => ($ignoreId ? 'sometimes|' : '').'required|string|max:255',
-            'template' => 'nullable|in:landing,portfolio,event,simple',
+            'template' => 'nullable|in:landing,portfolio,event,simple,restaurant,product,pricing,team,announcement,video,links,resume',
             'content' => 'nullable|array',
             'theme_color' => 'nullable|string|max:7',
             'logo_path' => 'nullable|string|max:500',

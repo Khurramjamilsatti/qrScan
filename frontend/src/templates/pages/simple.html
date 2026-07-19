@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #fff; color: #1a1333; }
+  .page { max-width: 400px; margin: 0 auto; padding: 28px 22px; }
+  h2 { font-size: 24px; font-weight: 800; line-height: 1.25; }
+  .body-text { font-size: 14px; color: #5c5470; margin-top: 14px; line-height: 1.65; white-space: pre-wrap; }
+  .cta { display: inline-block; margin-top: 18px; padding: 10px 20px; background: {{themeColor}}; color: #fff; font-size: 13px; font-weight: 600; border-radius: 999px; text-decoration: none; }
+  .sections { margin-top: 20px; }
+  {{{sectionStyles}}}
+</style>
+</head>
+<body>
+  <div class="page">
+    <h2>{{headline}}</h2>
+    {{#if body}}<p class="body-text">{{body}}</p>{{/if}}
+    {{{ctaHtml}}}
+    {{#if hasSections}}<div class="sections">{{{sectionsHtml}}}</div>{{/if}}
+  </div>
+</body>
+</html>

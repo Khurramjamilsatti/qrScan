@@ -79,7 +79,7 @@ class AuthController extends Controller
             abort(403, __('messages.admin_must_use_portal'));
         }
 
-        $user->loadCount(['qrCodes', 'shortLinks', 'businessCards', 'digitalPages', 'digitalMenus', 'digitalBadges', 'digitalTickets', 'scanToWinCampaigns']);
+        $user->loadCount(['qrCodes', 'shortLinks', 'businessCards', 'digitalPages', 'digitalMenus', 'digitalBadges', 'digitalEvents', 'digitalTickets', 'scanToWinCampaigns']);
 
         return response()->json([
             'user' => $user,
@@ -90,6 +90,7 @@ class AuthController extends Controller
                 'business_cards' => $user->business_cards_count,
                 'digital_pages' => $user->digital_pages_count,
                 'digital_menus' => $user->digital_menus_count,
+                'digital_events' => $user->digital_events_count,
                 'scans_this_month' => $user->scans_this_month,
             ],
         ]);

@@ -13,9 +13,27 @@
         <h3>{{ editId ? t('digitalPages.editPage') : t('digitalPages.createPage') }}</h3>
         <button @click="closeEditor" class="btn-ghost text-sm">✕ {{ t('common.close') }}</button>
       </div>
-      <SplitEditor>
+      <SplitEditor :preview-mode="previewMode">
         <template #form>
-          <form @submit.prevent="save" class="form-stack">
+          <form @submit.prevent="save" class="editor-form">
+            <div class="editor-tabs">
+              <button type="button" :class="{ active: editorTab === 'content' }" @click="editorTab = 'content'">{{ t('digitalPages.tabs.content') }}</button>
+              <button type="button" :class="{ active: editorTab === 'appearance' }" @click="editorTab = 'appearance'">{{ t('digitalPages.tabs.appearance') }}</button>
+              <button type="button" :class="{ active: editorTab === 'qr' }" @click="editorTab = 'qr'">{{ t('digitalPages.tabs.qrDesign') }}</button>
+            </div>
+
+            <div class="editor-form__scroll">
+            <div v-show="editorTab === 'content'" class="tab-panel">
+            <div class="template-section">
+              <div class="section-title">{{ t('digitalPages.chooseTemplate') }}</div>
+              <TemplateGallery
+                :model-value="form.template"
+                :templates="templateList"
+                :categories="templateCategories"
+                :columns="3"
+                @update:model-value="selectTemplate"
+              />
+            </div>
             <DomainSelect v-model="form.custom_domain_id" />
             <div class="form-group">
               <label>{{ t('digitalPages.pageUrlSlug') }}</label>
@@ -29,36 +47,11 @@
               <input v-model="form.title" required class="input-field" placeholder="Summer Sale 2026" />
             </div>
 
-            <div class="template-section">
-              <div class="section-title">{{ t('digitalPages.chooseTemplate') }}</div>
-              <div class="template-grid">
-                <button
-                  v-for="tpl in templateList"
-                  :key="tpl.id"
-                  type="button"
-                  class="template-card"
-                  :class="{ active: form.template === tpl.id }"
-                  @click="selectTemplate(tpl.id)"
-                >
-                  <span class="template-card__icon">{{ tpl.icon }}</span>
-                  <span class="template-card__label">{{ tpl.label }}</span>
-                  <span class="template-card__desc">{{ tpl.description }}</span>
-                </button>
-              </div>
-            </div>
-
-            <ImageAssetField v-model="form.logo_path" :label="t('common.logo')" folder="logos" ai-context="qr-logo" ai-placeholder="minimal brand logo" />
-            <ImageAssetField v-model="form.background_image_path" :label="t('businessCards.headerBackground')" folder="backgrounds" ai-context="page-background" ai-placeholder="abstract gradient header" />
-            <div class="form-group">
-              <label>{{ t('common.themeColor') }}</label>
-              <input v-model="form.theme_color" type="color" class="color-input" />
-            </div>
-
             <!-- Template fields -->
             <div class="content-section">
               <div class="section-title">{{ t('digitalPages.pageContent') }}</div>
 
-              <template v-if="form.template === 'landing'">
+              <template v-if="pageLayout === 'landing'">
                 <div class="form-group"><label>{{ t('digitalPages.headline') }}</label><input v-model="form.content.headline" class="input-field" /></div>
                 <div class="form-group"><label>{{ t('digitalPages.subheadline') }}</label><textarea v-model="form.content.subheadline" class="input-field" rows="2"></textarea></div>
                 <div class="form-row">
@@ -73,7 +66,7 @@
                 </div>
               </template>
 
-              <template v-else-if="form.template === 'portfolio'">
+              <template v-else-if="pageLayout === 'portfolio'">
                 <div class="form-group"><label>{{ t('digitalPages.headline') }}</label><input v-model="form.content.headline" class="input-field" /></div>
                 <div class="form-group"><label>{{ t('digitalPages.about') }}</label><textarea v-model="form.content.about" class="input-field" rows="3"></textarea></div>
                 <div class="repeater-head"><label>{{ t('digitalPages.projects') }}</label><button type="button" @click="addProject" class="text-sm link-btn">+ {{ t('common.add') }}</button></div>
@@ -85,7 +78,7 @@
                 </div>
               </template>
 
-              <template v-else-if="form.template === 'event'">
+              <template v-else-if="pageLayout === 'event'">
                 <div class="form-group"><label>{{ t('digitalPages.eventName') }}</label><input v-model="form.content.event_name" class="input-field" /></div>
                 <div class="form-row">
                   <div class="form-group"><label>{{ t('digitalPages.dateTime') }}</label><input v-model="form.content.date" class="input-field" placeholder="June 15, 2026 · 9:00 AM" /></div>
@@ -95,6 +88,84 @@
                 <div class="form-row">
                   <div class="form-group"><label>{{ t('digitalPages.registerLabel') }}</label><input v-model="form.content.cta_label" class="input-field" /></div>
                   <div class="form-group"><label>{{ t('digitalPages.registerUrl') }}</label><input v-model="form.content.cta_url" type="url" class="input-field" /></div>
+                </div>
+              </template>
+
+              <template v-else-if="pageLayout === 'pricing'">
+                <div class="form-group"><label>{{ t('digitalPages.headline') }}</label><input v-model="form.content.headline" class="input-field" /></div>
+                <div class="form-group"><label>{{ t('digitalPages.subheadline') }}</label><textarea v-model="form.content.subheadline" class="input-field" rows="2"></textarea></div>
+                <div class="repeater-head"><label>{{ t('digitalPages.plans') }}</label><button type="button" @click="addPlan" class="text-sm link-btn">+ {{ t('common.add') }}</button></div>
+                <div v-for="(plan, i) in form.content.plans" :key="i" class="repeater-block">
+                  <div class="form-row">
+                    <input v-model="plan.name" class="input-field" :placeholder="t('digitalPages.planName')" />
+                    <input v-model="plan.price" class="input-field" :placeholder="t('digitalPages.planPrice')" />
+                  </div>
+                  <input v-model="plan.description" class="input-field" :placeholder="t('common.description')" />
+                  <textarea v-model="plan.featuresText" class="input-field" rows="2" :placeholder="t('digitalPages.planFeaturesHint')" @input="syncPlanFeatures(plan)"></textarea>
+                  <button type="button" @click="form.content.plans.splice(i, 1)" class="remove-btn block">{{ t('common.remove') }}</button>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label>{{ t('digitalPages.ctaLabel') }}</label><input v-model="form.content.cta_label" class="input-field" /></div>
+                  <div class="form-group"><label>{{ t('digitalPages.ctaUrl') }}</label><input v-model="form.content.cta_url" type="url" class="input-field" /></div>
+                </div>
+              </template>
+
+              <template v-else-if="pageLayout === 'team'">
+                <div class="form-group"><label>{{ t('digitalPages.headline') }}</label><input v-model="form.content.headline" class="input-field" /></div>
+                <div class="form-group"><label>{{ t('digitalPages.about') }}</label><textarea v-model="form.content.about" class="input-field" rows="3"></textarea></div>
+                <div class="repeater-head"><label>{{ t('digitalPages.teamMembers') }}</label><button type="button" @click="addMember" class="text-sm link-btn">+ {{ t('common.add') }}</button></div>
+                <div v-for="(m, i) in form.content.members" :key="i" class="repeater-block">
+                  <div class="form-row">
+                    <input v-model="m.name" class="input-field" :placeholder="t('common.name')" />
+                    <input v-model="m.role" class="input-field" :placeholder="t('digitalPages.jobTitle')" />
+                  </div>
+                  <textarea v-model="m.bio" class="input-field" rows="2" :placeholder="t('businessCards.bio')" />
+                  <ImageAssetField v-model="m.image_path" :label="t('digitalPages.memberPhoto')" folder="photos" variant="compact" />
+                  <button type="button" @click="form.content.members.splice(i, 1)" class="remove-btn block">{{ t('common.remove') }}</button>
+                </div>
+              </template>
+
+              <template v-else-if="pageLayout === 'video'">
+                <div class="form-group"><label>{{ t('digitalPages.headline') }}</label><input v-model="form.content.headline" class="input-field" /></div>
+                <div class="form-group"><label>{{ t('digitalPages.videoUrl') }}</label><input v-model="form.content.video_url" class="input-field" placeholder="https://www.youtube.com/embed/..." /></div>
+                <div class="form-group"><label>{{ t('common.description') }}</label><textarea v-model="form.content.description" class="input-field" rows="3"></textarea></div>
+                <div class="form-row">
+                  <div class="form-group"><label>{{ t('digitalPages.ctaLabel') }}</label><input v-model="form.content.cta_label" class="input-field" /></div>
+                  <div class="form-group"><label>{{ t('digitalPages.ctaUrl') }}</label><input v-model="form.content.cta_url" type="url" class="input-field" /></div>
+                </div>
+              </template>
+
+              <template v-else-if="pageLayout === 'links'">
+                <div class="form-group"><label>{{ t('digitalPages.headline') }}</label><input v-model="form.content.headline" class="input-field" /></div>
+                <div class="form-group"><label>{{ t('businessCards.bio') }}</label><textarea v-model="form.content.bio" class="input-field" rows="2"></textarea></div>
+                <div class="repeater-head"><label>{{ t('common.links') }}</label><button type="button" @click="addProfileLink" class="text-sm link-btn">+ {{ t('digitalPages.addLink') }}</button></div>
+                <div v-for="(link, i) in form.content.profile_links" :key="i" class="repeater-row">
+                  <input v-model="link.label" class="input-field" :placeholder="t('common.label')" />
+                  <input v-model="link.url" class="input-field" placeholder="https://..." />
+                  <button type="button" @click="form.content.profile_links.splice(i, 1)" class="remove-btn">✕</button>
+                </div>
+              </template>
+
+              <template v-else-if="pageLayout === 'resume'">
+                <div class="form-group"><label>{{ t('common.name') }}</label><input v-model="form.content.headline" class="input-field" /></div>
+                <div class="form-group"><label>{{ t('digitalPages.summary') }}</label><textarea v-model="form.content.about" class="input-field" rows="3"></textarea></div>
+                <div class="form-group">
+                  <label>{{ t('digitalPages.skills') }}</label>
+                  <input v-model="form.content.skillsText" class="input-field" :placeholder="t('digitalPages.skillsHint')" @input="syncSkills" />
+                </div>
+                <div class="repeater-head"><label>{{ t('digitalPages.experience') }}</label><button type="button" @click="addExperience" class="text-sm link-btn">+ {{ t('common.add') }}</button></div>
+                <div v-for="(exp, i) in form.content.experience" :key="i" class="repeater-block">
+                  <div class="form-row">
+                    <input v-model="exp.title" class="input-field" :placeholder="t('digitalPages.jobTitle')" />
+                    <input v-model="exp.company" class="input-field" :placeholder="t('businessCards.company')" />
+                  </div>
+                  <input v-model="exp.period" class="input-field" :placeholder="t('digitalPages.period')" />
+                  <textarea v-model="exp.description" class="input-field" rows="2" :placeholder="t('common.description')" />
+                  <button type="button" @click="form.content.experience.splice(i, 1)" class="remove-btn block">{{ t('common.remove') }}</button>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label>{{ t('digitalPages.ctaLabel') }}</label><input v-model="form.content.cta_label" class="input-field" /></div>
+                  <div class="form-group"><label>{{ t('digitalPages.ctaUrl') }}</label><input v-model="form.content.cta_url" type="url" class="input-field" /></div>
                 </div>
               </template>
 
@@ -151,13 +222,11 @@
                         </select>
                       </div>
                     </div>
-                    <div class="repeater-head"><label>{{ t('digitalPages.photos') }}</label><button type="button" @click="addGalleryItem" class="link-btn">+ {{ t('digitalPages.addPhoto') }}</button></div>
-                    <div v-for="(item, i) in form.content.gallery.items" :key="i" class="repeater-block">
-                      <ImageAssetField v-model="item.image_path" :label="t('digitalPages.image')" folder="photos" ai-context="gallery" ai-placeholder="gallery photo" />
-                      <input v-model="item.caption" class="input-field" :placeholder="t('digitalPages.captionOptional')" />
-                      <input v-model="item.url" class="input-field" :placeholder="t('digitalPages.linkUrlOptional')" />
-                      <button type="button" @click="form.content.gallery.items.splice(i, 1)" class="remove-btn block">{{ t('digitalPages.removePhoto') }}</button>
-                    </div>
+                    <GalleryImagesField
+                      :model-value="form.content.gallery.items"
+                      :label="t('digitalPages.photos')"
+                      @update:model-value="onGalleryItemsChange"
+                    />
                   </template>
 
                   <!-- Calendar -->
@@ -232,7 +301,18 @@
                 </div>
               </div>
             </div>
+            </div>
 
+            <div v-show="editorTab === 'appearance'" class="tab-panel">
+              <ImageAssetField v-model="form.logo_path" :label="t('common.logo')" folder="logos" ai-context="qr-logo" ai-placeholder="minimal brand logo" />
+              <ImageAssetField v-model="form.background_image_path" :label="t('businessCards.headerBackground')" folder="backgrounds" ai-context="page-background" ai-placeholder="abstract gradient header" />
+              <div class="form-group">
+                <label>{{ t('common.themeColor') }}</label>
+                <input v-model="form.theme_color" type="color" class="color-input" />
+              </div>
+            </div>
+
+            <div v-show="editorTab === 'qr'" class="tab-panel">
             <div class="qr-section">
               <div class="section-title">{{ t('digitalPages.pageQrStyle') }}</div>
               <QrStyleFields
@@ -242,8 +322,11 @@
                 v-model:frame-style="form.frame_style"
               />
             </div>
+            </div>
 
             <p v-if="error" class="error-text">{{ error }}</p>
+            </div>
+
             <div class="form-actions">
               <button type="button" @click="closeEditor" class="btn-secondary">{{ t('common.cancel') }}</button>
               <button type="submit" :disabled="saving" class="btn-primary">{{ saving ? t('common.saving') : (editId ? t('common.update') : t('common.create')) }}</button>
@@ -251,7 +334,25 @@
           </form>
         </template>
         <template #preview>
+          <div v-if="editorTab === 'qr'" class="preview-stage preview-stage--qr">
+            <QrPreview
+              minimal
+              :content="previewPageUrl"
+              :name="form.title || t('digitalPages.newPage')"
+              :foreground="form.theme_color"
+              :logo-url="form.logo_path"
+              :background-image="form.background_image_path"
+              :background="'#ffffff'"
+              :size="240"
+              :qr-shape="form.qr_shape"
+              :dot-style="form.dot_style"
+              :corner-style="form.corner_style"
+              :frame-style="form.frame_style"
+            />
+            <p class="preview-qr-url">{{ previewPageUrl }}</p>
+          </div>
           <PagePreview
+            v-else
             :title="form.title"
             :template="form.template"
             :content="previewContent({ template: form.template, content: form.content })"
@@ -261,21 +362,6 @@
             :page-url="previewPageUrl"
             :domain-label="domains.labelFor(form.custom_domain_id)"
           />
-          <div class="mt-4 text-center">
-            <QrPreview
-              v-if="form.slug"
-              :content="previewPageUrl"
-              :name="form.title"
-              :foreground="form.theme_color"
-              :logo-url="form.logo_path"
-              :background-image="form.background_image_path"
-              :size="140"
-              :qr-shape="form.qr_shape"
-              :dot-style="form.dot_style"
-              :corner-style="form.corner_style"
-              :frame-style="form.frame_style"
-            />
-          </div>
         </template>
       </SplitEditor>
     </div>
@@ -290,34 +376,38 @@
       </div>
       <div v-else class="pages-grid">
         <div v-for="page in pages" :key="page.id" class="page-item" :class="{ draft: !page.is_active }">
-          <div v-if="!page.is_active" class="draft-ribbon">{{ t('publish.draft') }}</div>
-          <PagePreview
-            :title="page.title"
-            :template="page.template"
-            :content="previewContent(page)"
-            :theme-color="page.theme_color"
-            :logo="page.logo_path"
-            :background-image="page.background_image_path"
-            :page-url="page.page_url"
-            :domain-label="page.domain_label"
-          />
-          <div class="page-item__footer">
-            <PublishToggle
-              :model-value="!!page.is_active"
-              :loading="togglingId === page.id"
-              :active-label="t('publish.published')"
-              :inactive-label="t('publish.draft')"
-              @update:model-value="togglePublish(page)"
+          <div class="page-item__stack">
+            <div v-if="!page.is_active" class="draft-ribbon">{{ t('publish.draft') }}</div>
+            <PageHtmlPreview
+              compact
+              embedded
+              :title="page.title"
+              :template="page.template"
+              :content="previewContent(page)"
+              :theme-color="page.theme_color"
+              :logo="page.logo_path"
+              :background-image="page.background_image_path"
+              :page-url="page.page_url"
+              :domain-label="page.domain_label"
             />
-            <span class="view-stat">
-              <span class="view-stat__num">{{ page.view_count }}</span>
-              <span class="view-stat__label">{{ t('common.views') }}</span>
-            </span>
-            <div class="page-item__actions">
-              <CopyButton :text="page.page_url" :label="t('common.copy')" />
-              <button @click="openEdit(page)" class="action-btn">{{ t('common.edit') }}</button>
-              <button @click="showAnalytics(page)" class="action-btn">{{ t('common.stats') }}</button>
-              <button @click="deletePage(page)" class="action-btn danger">{{ t('common.delete') }}</button>
+            <div class="page-item__footer">
+              <PublishToggle
+                :model-value="!!page.is_active"
+                :loading="togglingId === page.id"
+                :active-label="t('publish.published')"
+                :inactive-label="t('publish.draft')"
+                @update:model-value="togglePublish(page)"
+              />
+              <span class="view-stat">
+                <span class="view-stat__num">{{ page.view_count }}</span>
+                <span class="view-stat__label">{{ t('common.views') }}</span>
+              </span>
+              <div class="page-item__actions">
+                <CopyButton :text="page.page_url" :label="t('common.copy')" />
+                <button @click="openEdit(page)" class="action-btn">{{ t('common.edit') }}</button>
+                <button @click="showAnalytics(page)" class="action-btn">{{ t('common.stats') }}</button>
+                <button @click="deletePage(page)" class="action-btn danger">{{ t('common.delete') }}</button>
+              </div>
             </div>
           </div>
         </div>
@@ -343,21 +433,26 @@ import { useI18n } from 'vue-i18n'
 import api from '../../services/api'
 import { useDomainsStore } from '../../stores/domains'
 import SplitEditor from '../../components/ui/SplitEditor.vue'
+import PageHtmlPreview from '../../components/previews/PageHtmlPreview.vue'
 import PagePreview from '../../components/previews/PagePreview.vue'
 import QrPreview from '../../components/previews/QrPreview.vue'
 import CopyButton from '../../components/ui/CopyButton.vue'
 import AnalyticsPanel from '../../components/ui/AnalyticsPanel.vue'
 import DomainSelect from '../../components/ui/DomainSelect.vue'
 import ImageAssetField from '../../components/ui/ImageAssetField.vue'
+import GalleryImagesField from '../../components/ui/GalleryImagesField.vue'
 import PublishToggle from '../../components/ui/PublishToggle.vue'
 import QrStyleFields from '../../components/ui/QrStyleFields.vue'
+import TemplateGallery from '../../components/ui/TemplateGallery.vue'
 import { useDialog } from '../../composables/useDialog'
 import { translateList } from '../../composables/useTranslatedOptions.js'
 import {
   TEMPLATE_LIST,
+  PAGE_TEMPLATE_CATEGORIES,
   defaultContentForTemplate,
   mergePageContent,
   pickPageExtras,
+  getPageTemplateLayout,
 } from '../../utils/pageTemplates'
 import { PAGE_SECTION_MAP, isSectionEnabled as checkSectionEnabled, sectionLabel } from '../../utils/pageSections'
 import { GALLERY_LAYOUTS, EXTRA_LINK_ICONS, SOCIAL_PLATFORMS } from '../../utils/socialPlatforms'
@@ -367,6 +462,8 @@ const domains = useDomainsStore()
 const dialog = useDialog()
 
 const templateList = computed(() => translateList(TEMPLATE_LIST, t))
+const templateCategories = computed(() => translateList(PAGE_TEMPLATE_CATEGORIES, t))
+const pageLayout = computed(() => getPageTemplateLayout(form.value.template))
 const galleryLayouts = computed(() => translateList(GALLERY_LAYOUTS, t))
 const socialPlatforms = computed(() => translateList(SOCIAL_PLATFORMS, t))
 const extraLinkIcons = computed(() => translateList(EXTRA_LINK_ICONS, t))
@@ -381,6 +478,7 @@ const analyticsPage = ref(null)
 const togglingId = ref(null)
 const expandedSections = ref({})
 const loadError = ref('')
+const editorTab = ref('content')
 
 const pageHost = computed(() => {
   try { return new URL(domains.baseUrlFor(form.value?.custom_domain_id)).host } catch { return 'localhost' }
@@ -397,8 +495,9 @@ const form = ref(defaultForm())
 
 const previewPageUrl = computed(() => {
   const base = domains.baseUrlFor(form.value.custom_domain_id)
-  return form.value.slug ? `${base}/page/${form.value.slug}` : `${base}/page/...`
+  return form.value.slug ? `${base}/page/${form.value.slug}` : `${base}/page/preview`
 })
+const previewMode = computed(() => (editorTab.value === 'qr' ? 'qr' : 'content'))
 
 function previewContent(page) {
   return mergePageContent(page.template, page.content || {})
@@ -470,11 +569,47 @@ function addExtraLink() {
   expandedSections.value.extra_links = true
 }
 
+function onGalleryItemsChange(items) {
+  form.value.content.gallery.items = items
+  if (items?.length) {
+    form.value.content.gallery.enabled = true
+    expandedSections.value.gallery = true
+  }
+}
+
 function addGalleryItem() {
   if (!form.value.content.gallery.items) form.value.content.gallery.items = []
   form.value.content.gallery.items.push({ image_path: '', caption: '', url: '' })
   form.value.content.gallery.enabled = true
   expandedSections.value.gallery = true
+}
+
+function addPlan() {
+  if (!form.value.content.plans) form.value.content.plans = []
+  form.value.content.plans.push({ name: '', price: '', description: '', features: [], featuresText: '' })
+}
+
+function syncPlanFeatures(plan) {
+  plan.features = (plan.featuresText || '').split('\n').map((s) => s.trim()).filter(Boolean)
+}
+
+function addMember() {
+  if (!form.value.content.members) form.value.content.members = []
+  form.value.content.members.push({ name: '', role: '', bio: '', image_path: '' })
+}
+
+function addProfileLink() {
+  if (!form.value.content.profile_links) form.value.content.profile_links = []
+  form.value.content.profile_links.push({ label: '', url: '' })
+}
+
+function addExperience() {
+  if (!form.value.content.experience) form.value.content.experience = []
+  form.value.content.experience.push({ title: '', company: '', period: '', description: '' })
+}
+
+function syncSkills() {
+  form.value.content.skills = (form.value.content.skillsText || '').split(',').map((s) => s.trim()).filter(Boolean)
 }
 
 function addCalendarEvent() {
@@ -488,21 +623,33 @@ function openCreate() {
   editId.value = null
   form.value = defaultForm()
   expandedSections.value = { contact: true }
+  editorTab.value = 'content'
   editing.value = true
   error.value = ''
 }
 
 function openEdit(page) {
   editId.value = page.id
+  const content = mergePageContent(page.template, page.content || {})
+  if (content.plans) {
+    content.plans = content.plans.map((p) => ({
+      ...p,
+      featuresText: (p.features || []).join('\n'),
+    }))
+  }
+  if (content.skills) {
+    content.skillsText = content.skills.join(', ')
+  }
   form.value = {
     ...page,
-    content: mergePageContent(page.template, page.content || {}),
+    content,
     theme_color: page.theme_color || '#e8655a',
     qr_shape: page.qr_shape || 'square',
     dot_style: page.dot_style || 'square',
     corner_style: page.corner_style || 'sharp',
     frame_style: page.frame_style || 'none',
   }
+  editorTab.value = 'content'
   editing.value = true
   error.value = ''
   expandedSections.value = Object.fromEntries(
@@ -530,9 +677,20 @@ async function save() {
   saving.value = true
   error.value = ''
   try {
+    const content = JSON.parse(JSON.stringify(form.value.content))
+    if (content.plans) {
+      content.plans = content.plans.map(({ featuresText, ...plan }) => ({
+        ...plan,
+        features: plan.features || (featuresText || '').split('\n').map((s) => s.trim()).filter(Boolean),
+      }))
+    }
+    if (content.skillsText) {
+      content.skills = content.skillsText.split(',').map((s) => s.trim()).filter(Boolean)
+      delete content.skillsText
+    }
     const payload = {
       ...form.value,
-      content: JSON.parse(JSON.stringify(form.value.content)),
+      content,
     }
     delete payload.is_active
     delete payload.page_url
@@ -593,7 +751,6 @@ onMounted(async () => {
 .editor-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.5rem; box-shadow: var(--shadow-sm); }
 .editor-panel__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
 .editor-panel__header h3 { font-weight: 700; font-size: 1.125rem; color: var(--text-primary); }
-.form-stack { display: flex; flex-direction: column; gap: 1rem; }
 .form-group label { display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.375rem; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .slug-input { display: flex; align-items: center; gap: 0.5rem; }
@@ -603,7 +760,7 @@ onMounted(async () => {
   background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1rem;
   display: flex; flex-direction: column; gap: 0.75rem;
 }
-.features-panel { gap: 0.625rem; }
+.features-panel { gap: 0.625rem; padding-bottom: 0.25rem; margin-bottom: 0.25rem; }
 .feature-block {
   border: 1px solid var(--border);
   border-radius: 0.75rem;
@@ -685,18 +842,6 @@ onMounted(async () => {
 .social-row { display: grid; grid-template-columns: 8rem 1fr auto; gap: 0.5rem; margin-bottom: 0.5rem; }
 @media (max-width: 640px) { .social-row { grid-template-columns: 1fr; } }
 .section-title { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-.template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-@media (min-width: 640px) { .template-grid { grid-template-columns: repeat(4, 1fr); } }
-.template-card {
-  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.25rem;
-  padding: 0.75rem 0.5rem; border-radius: 0.75rem; border: 2px solid var(--border);
-  background: var(--surface); cursor: pointer; transition: all 0.15s;
-}
-.template-card:hover { border-color: color-mix(in srgb, var(--brand) 40%, var(--border)); }
-.template-card.active { border-color: var(--brand); background: var(--brand-muted); }
-.template-card__icon { font-size: 1.25rem; }
-.template-card__label { font-size: 0.75rem; font-weight: 700; color: var(--text-primary); }
-.template-card__desc { font-size: 0.625rem; color: var(--text-muted); line-height: 1.3; }
 .repeater-head { display: flex; justify-content: space-between; align-items: center; }
 .repeater-head label { font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary); }
 .link-btn { color: var(--brand); font-weight: 600; background: none; border: none; cursor: pointer; }
@@ -706,8 +851,19 @@ onMounted(async () => {
 .remove-btn.block { font-size: 0.75rem; text-align: left; padding: 0; }
 .form-actions { display: flex; gap: 0.75rem; padding-top: 0.5rem; }
 .error-text { color: #ef4444; font-size: 0.875rem; }
-.pages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-.page-item { position: relative; display: flex; flex-direction: column; gap: 0.75rem; }
+.pages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; align-items: start; }
+.page-item {
+  display: flex;
+  justify-content: center;
+}
+.page-item__stack {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
 .page-item.draft { opacity: 0.88; }
 .draft-ribbon {
   position: absolute; top: 0.5rem; left: 0.5rem; z-index: 5;
@@ -715,7 +871,13 @@ onMounted(async () => {
   padding: 0.15rem 0.4rem; border-radius: 0.25rem;
   background: var(--gold-muted); color: #92680a;
 }
-.page-item__footer { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.page-item__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
 .view-stat {
   display: inline-flex; align-items: baseline; gap: 0.2rem;
   padding: 0.15rem 0.5rem; border-radius: 9999px;
@@ -735,4 +897,25 @@ onMounted(async () => {
 .drawer { width: 100%; max-width: 420px; background: var(--surface); height: 100%; padding: 1.5rem; overflow-y: auto; border-left: 1px solid var(--border); }
 .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
 .drawer-header h3 { color: var(--text-primary); font-weight: 700; }
+.preview-stage--qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: 320px;
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, var(--bg-subtle), var(--surface));
+  border: 1px solid var(--border);
+}
+.preview-qr-url {
+  font-size: 0.6875rem;
+  font-family: ui-monospace, monospace;
+  color: var(--text-muted);
+  text-align: center;
+  word-break: break-all;
+  max-width: 260px;
+}
 </style>

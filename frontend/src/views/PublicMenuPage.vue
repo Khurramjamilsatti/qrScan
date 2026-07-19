@@ -33,8 +33,11 @@
 
     <main v-else class="page-center wide">
       <div class="published-badge"><span class="badge-dot"></span>{{ t('public.digitalMenu') }}</div>
-      <article class="public-menu">
-        <MenuPreview
+      <article class="public-card">
+        <MenuHtmlPreview
+          expandable
+          embedded
+          public-view
           :name="menu.name"
           :description="menu.description"
           :logo="menu.logo_path"
@@ -45,17 +48,25 @@
           :phone="menu.phone"
           :hours="menu.hours"
           :sections="menu.sections || []"
+          :slug="menu.slug"
+          :template="menu.template || 'classic'"
         />
-        <div class="share-qr">
-          <p class="share-label">{{ t('digitalMenus.scanToViewMenu') }}</p>
-          <QrPreview
-            :content="menuUrl"
-            :name="menu.name"
-            :foreground="themeColor"
-            :logo-url="menu.logo_path"
-            :background-image="menu.background_image_path"
-            :size="160"
-          />
+        <div class="page-qr">
+          <p class="page-qr__label">{{ t('digitalMenus.scanToViewMenu') }}</p>
+          <div class="page-qr__code">
+            <QrPreview
+              :content="menuUrl"
+              :foreground="themeColor"
+              :logo-url="menu.logo_path"
+              :background-image="menu.background_image_path"
+              :size="160"
+              minimal
+              :qr-shape="menu.qr_shape || 'square'"
+              :dot-style="menu.dot_style || 'square'"
+              :corner-style="menu.corner_style || 'sharp'"
+              :frame-style="menu.frame_style || 'none'"
+            />
+          </div>
         </div>
       </article>
     </main>
@@ -69,7 +80,7 @@ import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import ThemeToggle from '../components/ui/ThemeToggle.vue'
 import PublicBrandHeader from '../components/ui/PublicBrandHeader.vue'
-import MenuPreview from '../components/previews/MenuPreview.vue'
+import MenuHtmlPreview from '../components/previews/MenuHtmlPreview.vue'
 import QrPreview from '../components/previews/QrPreview.vue'
 
 const { t } = useI18n()
@@ -90,6 +101,7 @@ async function load() {
   try {
     const { data } = await axios.get(`/api/menu/${route.params.slug}`)
     menu.value = data
+    document.title = `${data.name} — QRScan Menu`
   } catch (e) {
     if (e.response?.status === 403) errorType.value = 'unpublished'
     else errorType.value = 'notfound'
@@ -113,10 +125,11 @@ onMounted(load)
   display: flex; justify-content: space-between; align-items: center;
   padding: 1rem 1.5rem; max-width: 48rem; margin: 0 auto;
 }
-.brand-link { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #1a1333; text-decoration: none; font-size: 0.9375rem; }
-.brand-icon { color: #e8655a; }
-.brand-accent { color: #e8b84a; }
-.page-center { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 1rem 1rem 3rem; max-width: 28rem; margin: 0 auto; }
+.page-center {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 1rem 1rem 3rem; max-width: 28rem; margin: 0 auto;
+}
 .page-center.wide { max-width: 32rem; }
 .published-badge {
   display: inline-flex; align-items: center; gap: 0.375rem;
@@ -124,9 +137,54 @@ onMounted(load)
   color: #6b4fa0; margin-bottom: 0.75rem;
 }
 .badge-dot { width: 0.375rem; height: 0.375rem; border-radius: 50%; background: #e8655a; }
-.public-menu { width: 100%; }
-.share-qr { margin-top: 1.5rem; text-align: center; }
-.share-label { font-size: 0.75rem; font-weight: 600; color: #8b839c; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+
+.public-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 1.5rem;
+  border: 1px solid #e8e4f0;
+  box-shadow: 0 8px 28px rgba(26, 19, 51, 0.08);
+  overflow: hidden;
+}
+.public-card :deep(.menu-html-preview),
+.public-card :deep(.html-doc-preview) {
+  width: 100%;
+  display: block;
+}
+.public-card :deep(.html-doc-preview--embedded .html-doc-preview__frame) {
+  width: 100%;
+  max-width: 100%;
+}
+
+.page-qr {
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 1px solid #e8e4f0;
+  text-align: center;
+}
+.page-qr__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #8b839c;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+.page-qr__code {
+  display: flex;
+  justify-content: center;
+}
+.page-qr__code :deep(.qr-preview-card--minimal) {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.page-qr__code :deep(.qr-frame) {
+  min-height: auto;
+  padding: 0;
+  background: transparent !important;
+}
+
 .loader-card, .state-card {
   width: 100%; background: #fff; border-radius: 1.25rem; padding: 2rem;
   border: 1px solid #e8e4f0; text-align: center; box-shadow: 0 4px 24px rgba(26,19,51,0.06);
@@ -138,5 +196,4 @@ onMounted(load)
 .state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
 .state-card h2 { font-size: 1.25rem; font-weight: 700; color: #1a1333; }
 .state-card p { color: #8b839c; font-size: 0.875rem; margin: 0.5rem 0 1.25rem; }
-:deep(.menu-preview__sections) { max-height: none; }
 </style>

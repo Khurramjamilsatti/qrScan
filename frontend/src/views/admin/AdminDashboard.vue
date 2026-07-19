@@ -125,6 +125,8 @@ const statCards = computed(() => {
     { icon: '🏅', label: t('dashboard.statBadges'), value: s.digital_badges, color: '#6b4fa0' },
     { icon: '🎫', label: t('dashboard.statTickets'), value: s.digital_tickets, color: '#e8655a' },
     { icon: '🎰', label: t('dashboard.statScanToWin'), value: s.scan_to_win, color: '#e8b84a' },
+    { icon: '📝', label: t('dashboard.statForms'), value: s.forms, color: '#673ab7' },
+    { icon: '📋', label: t('admin.statFormSubmissions'), value: s.form_submissions, color: '#673ab7' },
     { icon: '📈', label: t('dashboard.statTotalScans'), value: s.total_scans, color: '#e8655a' },
     { icon: '🖱', label: t('admin.statTotalClicks'), value: s.total_clicks, color: '#e8b84a' },
     { icon: '👁', label: t('admin.statTotalViews'), value: s.total_views, color: '#6b4fa0' },

@@ -13,134 +13,146 @@
         <h3>{{ editId ? t('digitalBadges.editBadge') : t('digitalBadges.createBadge') }}</h3>
         <button @click="closeEditor" class="btn-ghost text-sm">✕ {{ t('common.close') }}</button>
       </div>
-      <SplitEditor>
+      <SplitEditor :preview-mode="editorTab">
         <template #form>
-          <form @submit.prevent="save" class="form-stack">
-            <DomainSelect v-model="form.custom_domain_id" />
-            <div class="form-group">
-              <label>{{ t('digitalBadges.badgeUrlSlug') }}</label>
-              <div class="slug-input">
-                <span>{{ badgeHost }}/badge/</span>
-                <input v-model="form.slug" required pattern="[a-zA-Z0-9_-]+" class="input-field" placeholder="ux-design-2026" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>{{ t('digitalBadges.badgeTitle') }}</label>
-              <input v-model="form.title" required class="input-field" placeholder="UX Design Certificate" />
+          <form @submit.prevent="save" class="editor-form">
+            <div class="editor-tabs">
+              <button type="button" :class="{ active: editorTab === 'content' }" @click="editorTab = 'content'">{{ t('digitalBadges.tabs.content') }}</button>
+              <button type="button" :class="{ active: editorTab === 'appearance' }" @click="editorTab = 'appearance'">{{ t('digitalBadges.tabs.appearance') }}</button>
+              <button type="button" :class="{ active: editorTab === 'qr' }" @click="editorTab = 'qr'">{{ t('digitalBadges.tabs.qrDesign') }}</button>
             </div>
 
-            <div class="template-section">
-              <div class="section-title">{{ t('digitalPages.chooseTemplate') }}</div>
-              <div class="template-grid template-grid--3">
-                <button
-                  v-for="tpl in badgeTemplates"
-                  :key="tpl.id"
-                  type="button"
-                  class="template-card"
-                  :class="{ active: form.template === tpl.id }"
-                  @click="form.template = tpl.id"
-                >
-                  <span class="template-card__icon">{{ tpl.icon }}</span>
-                  <span class="template-card__label">{{ tpl.label }}</span>
-                  <span class="template-card__desc">{{ tpl.description }}</span>
-                </button>
+            <div class="editor-form__scroll">
+              <div v-show="editorTab === 'content'" class="tab-panel">
+                <DomainSelect v-model="form.custom_domain_id" />
+                <div class="form-group">
+                  <label>{{ t('digitalBadges.badgeUrlSlug') }}</label>
+                  <div class="slug-input">
+                    <span>{{ badgeHost }}/badge/</span>
+                    <input v-model="form.slug" required pattern="[a-zA-Z0-9_-]+" class="input-field" placeholder="ux-design-2026" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>{{ t('digitalBadges.badgeTitle') }}</label>
+                  <input v-model="form.title" required class="input-field" placeholder="UX Design Certificate" />
+                </div>
+
+                <div class="template-section">
+                  <div class="section-title">{{ t('digitalPages.chooseTemplate') }}</div>
+                  <div class="template-grid template-grid--3">
+                    <button
+                      v-for="tpl in badgeTemplates"
+                      :key="tpl.id"
+                      type="button"
+                      class="template-card"
+                      :class="{ active: form.template === tpl.id }"
+                      @click="form.template = tpl.id"
+                    >
+                      <span class="template-card__icon">{{ tpl.icon }}</span>
+                      <span class="template-card__label">{{ tpl.label }}</span>
+                      <span class="template-card__desc">{{ tpl.description }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>{{ t('digitalBadges.recipientName') }}</label>
+                    <input v-model="form.recipient_name" required class="input-field" :placeholder="t('auth.namePlaceholder')" />
+                  </div>
+                  <div class="form-group">
+                    <label>{{ t('digitalBadges.recipientEmail') }}</label>
+                    <input v-model="form.recipient_email" type="email" class="input-field" :placeholder="t('auth.emailPlaceholder')" />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>{{ t('businessCards.company') }}</label>
+                    <input v-model="form.issuer_name" class="input-field" placeholder="Acme Academy" />
+                  </div>
+                  <div class="form-group">
+                    <label>{{ t('digitalBadges.badgeId') }}</label>
+                    <input v-model="form.badge_id" class="input-field" placeholder="BADGE-2026-001" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>{{ t('common.description') }}</label>
+                  <textarea v-model="form.description" class="input-field" rows="3" placeholder="Awarded for outstanding achievement..."></textarea>
+                </div>
+
+                <div class="content-section">
+                  <div class="repeater-head">
+                    <span class="section-title">{{ t('common.tags') }}</span>
+                    <button type="button" @click="addSkill" class="link-btn">+ {{ t('common.add') }}</button>
+                  </div>
+                  <div v-for="(skill, i) in form.skills" :key="i" class="repeater-row">
+                    <input v-model="form.skills[i]" class="input-field" :placeholder="t('common.name')" />
+                    <button type="button" @click="form.skills.splice(i, 1)" class="remove-btn">✕</button>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>{{ t('digitalBadges.issueDate') }}</label>
+                    <input v-model="form.issue_date" type="date" class="input-field" />
+                  </div>
+                  <div class="form-group">
+                    <label>{{ t('digitalBadges.expiryDate') }}</label>
+                    <input v-model="form.expiry_date" type="date" class="input-field" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>{{ t('digitalBadges.verifyUrl') }}</label>
+                  <input v-model="form.verify_url" type="url" class="input-field" placeholder="https://verify.example.com/badge/..." />
+                </div>
+
+                <div class="content-section">
+                  <div class="section-title">{{ t('digitalBadges.displaySettings') }}</div>
+                  <label class="checkbox-row">
+                    <input v-model="form.settings.show_skills" type="checkbox" />
+                    <span>{{ t('digitalBadges.showSkills') }}</span>
+                  </label>
+                  <label class="checkbox-row">
+                    <input v-model="form.settings.show_dates" type="checkbox" />
+                    <span>{{ t('digitalBadges.showDates') }}</span>
+                  </label>
+                  <label class="checkbox-row">
+                    <input v-model="form.settings.show_badge_id" type="checkbox" />
+                    <span>{{ t('digitalBadges.showBadgeId') }}</span>
+                  </label>
+                  <label class="checkbox-row">
+                    <input v-model="form.settings.show_verify_link" type="checkbox" />
+                    <span>{{ t('digitalBadges.showVerifyLink') }}</span>
+                  </label>
+                  <label class="checkbox-row">
+                    <input v-model="form.settings.show_qr" type="checkbox" />
+                    <span>{{ t('digitalBadges.showQrCode') }}</span>
+                  </label>
+                </div>
               </div>
+
+              <div v-show="editorTab === 'appearance'" class="tab-panel">
+                <ImageAssetField v-model="form.logo_path" :label="t('common.logo')" folder="logos" ai-context="badge-logo" ai-placeholder="organization logo emblem" />
+                <ImageAssetField v-model="form.badge_image_path" :label="t('digitalBadges.badgeImage')" folder="badges" ai-context="achievement-badge" ai-placeholder="gold achievement badge icon" />
+                <ImageAssetField v-model="form.background_image_path" :label="t('common.background')" folder="backgrounds" ai-context="certificate-background" ai-placeholder="elegant certificate background" />
+                <div class="form-group">
+                  <label>{{ t('common.themeColor') }}</label>
+                  <input v-model="form.theme_color" type="color" class="color-input" />
+                </div>
+              </div>
+
+              <div v-show="editorTab === 'qr'" class="tab-panel">
+                <QrStyleFields
+                  v-model:qr-shape="form.qr_shape"
+                  v-model:dot-style="form.dot_style"
+                  v-model:corner-style="form.corner_style"
+                  v-model:frame-style="form.frame_style"
+                />
+              </div>
+
+              <p v-if="error" class="error-text">{{ error }}</p>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ t('digitalBadges.recipientName') }}</label>
-                <input v-model="form.recipient_name" required class="input-field" :placeholder="t('auth.namePlaceholder')" />
-              </div>
-              <div class="form-group">
-                <label>{{ t('digitalBadges.recipientEmail') }}</label>
-                <input v-model="form.recipient_email" type="email" class="input-field" :placeholder="t('auth.emailPlaceholder')" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ t('businessCards.company') }}</label>
-                <input v-model="form.issuer_name" class="input-field" placeholder="Acme Academy" />
-              </div>
-              <div class="form-group">
-                <label>{{ t('digitalBadges.badgeId') }}</label>
-                <input v-model="form.badge_id" class="input-field" placeholder="BADGE-2026-001" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>{{ t('common.description') }}</label>
-              <textarea v-model="form.description" class="input-field" rows="3" placeholder="Awarded for outstanding achievement..."></textarea>
-            </div>
-
-            <div class="content-section">
-              <div class="repeater-head">
-                <span class="section-title">{{ t('common.tags') }}</span>
-                <button type="button" @click="addSkill" class="link-btn">+ {{ t('common.add') }}</button>
-              </div>
-              <div v-for="(skill, i) in form.skills" :key="i" class="repeater-row">
-                <input v-model="form.skills[i]" class="input-field" :placeholder="t('common.name')" />
-                <button type="button" @click="form.skills.splice(i, 1)" class="remove-btn">✕</button>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ t('digitalBadges.issueDate') }}</label>
-                <input v-model="form.issue_date" type="date" class="input-field" />
-              </div>
-              <div class="form-group">
-                <label>{{ t('digitalBadges.expiryDate') }}</label>
-                <input v-model="form.expiry_date" type="date" class="input-field" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>{{ t('digitalBadges.verifyUrl') }}</label>
-              <input v-model="form.verify_url" type="url" class="input-field" placeholder="https://verify.example.com/badge/..." />
-            </div>
-
-            <div class="content-section">
-              <div class="section-title">{{ t('digitalBadges.displaySettings') }}</div>
-              <label class="checkbox-row">
-                <input v-model="form.settings.show_skills" type="checkbox" />
-                <span>{{ t('digitalBadges.showSkills') }}</span>
-              </label>
-              <label class="checkbox-row">
-                <input v-model="form.settings.show_dates" type="checkbox" />
-                <span>{{ t('digitalBadges.showDates') }}</span>
-              </label>
-              <label class="checkbox-row">
-                <input v-model="form.settings.show_badge_id" type="checkbox" />
-                <span>{{ t('digitalBadges.showBadgeId') }}</span>
-              </label>
-              <label class="checkbox-row">
-                <input v-model="form.settings.show_verify_link" type="checkbox" />
-                <span>{{ t('digitalBadges.showVerifyLink') }}</span>
-              </label>
-              <label class="checkbox-row">
-                <input v-model="form.settings.show_qr" type="checkbox" />
-                <span>{{ t('digitalBadges.showQrCode') }}</span>
-              </label>
-            </div>
-
-            <ImageAssetField v-model="form.logo_path" :label="t('common.logo')" folder="logos" ai-context="badge-logo" ai-placeholder="organization logo emblem" />
-            <ImageAssetField v-model="form.badge_image_path" :label="t('digitalBadges.badgeImage')" folder="badges" ai-context="achievement-badge" ai-placeholder="gold achievement badge icon" />
-            <ImageAssetField v-model="form.background_image_path" :label="t('common.background')" folder="backgrounds" ai-context="certificate-background" ai-placeholder="elegant certificate background" />
-            <div class="form-group">
-              <label>{{ t('common.themeColor') }}</label>
-              <input v-model="form.theme_color" type="color" class="color-input" />
-            </div>
-
-            <div class="qr-section">
-              <div class="section-title">{{ t('qrCodes.qrCodeStyle') }}</div>
-              <QrStyleFields
-                v-model:qr-shape="form.qr_shape"
-                v-model:dot-style="form.dot_style"
-                v-model:corner-style="form.corner_style"
-                v-model:frame-style="form.frame_style"
-              />
-            </div>
-
-            <p v-if="error" class="error-text">{{ error }}</p>
             <div class="form-actions">
               <button type="button" @click="closeEditor" class="btn-secondary">{{ t('common.cancel') }}</button>
               <button type="submit" :disabled="saving" class="btn-primary">{{ saving ? t('common.saving') : (editId ? t('common.update') : t('common.create')) }}</button>
@@ -148,7 +160,22 @@
           </form>
         </template>
         <template #preview>
+          <QrPreview
+            v-if="editorTab === 'qr' && form.slug"
+            minimal
+            :content="previewBadgeUrl"
+            :name="form.title"
+            :foreground="form.theme_color"
+            :logo-url="form.logo_path"
+            :background-image="form.background_image_path"
+            :size="220"
+            :qr-shape="form.qr_shape"
+            :dot-style="form.dot_style"
+            :corner-style="form.corner_style"
+            :frame-style="form.frame_style"
+          />
           <BadgePreview
+            v-else
             :title="form.title"
             :template="form.template"
             :recipient-name="form.recipient_name"
@@ -166,21 +193,6 @@
             :badge-image="form.badge_image_path"
             :badge-url="previewBadgeUrl"
           />
-          <div class="mt-4 text-center">
-            <QrPreview
-              v-if="form.slug"
-              :content="previewBadgeUrl"
-              :name="form.title"
-              :foreground="form.theme_color"
-              :logo-url="form.logo_path"
-              :background-image="form.background_image_path"
-              :size="140"
-              :qr-shape="form.qr_shape"
-              :dot-style="form.dot_style"
-              :corner-style="form.corner_style"
-              :frame-style="form.frame_style"
-            />
-          </div>
         </template>
       </SplitEditor>
     </div>
@@ -195,9 +207,12 @@
       </div>
       <div v-else class="badges-grid">
         <div v-for="badge in badges" :key="badge.id" class="badge-item" :class="{ draft: !badge.is_active }">
-          <div v-if="!badge.is_active" class="draft-ribbon">{{ t('publish.draft') }}</div>
-          <BadgePreview
-            :title="badge.title"
+          <div class="badge-item__stack">
+            <div v-if="!badge.is_active" class="draft-ribbon">{{ t('publish.draft') }}</div>
+            <div class="item-preview-scroll">
+              <BadgePreview
+                compact
+                :title="badge.title"
             :template="badge.template"
             :recipient-name="badge.recipient_name"
             :issuer-name="badge.issuer_name"
@@ -212,8 +227,9 @@
             :logo="badge.logo_path"
             :background-image="badge.background_image_path"
             :badge-image="badge.badge_image_path"
-            :badge-url="badge.badge_url"
-          />
+              />
+            </div>
+          </div>
           <div class="badge-item__footer">
             <PublishToggle
               :model-value="!!badge.is_active"
@@ -281,6 +297,7 @@ const error = ref('')
 const loadError = ref('')
 const analyticsBadge = ref(null)
 const togglingId = ref(null)
+const editorTab = ref('content')
 
 const badgeTemplates = computed(() => translateList(BADGE_TEMPLATES, t))
 
@@ -303,6 +320,7 @@ function addSkill() {
 function openCreate() {
   editId.value = null
   form.value = defaultBadgeForm()
+  editorTab.value = 'content'
   editing.value = true
   error.value = ''
 }
@@ -319,6 +337,7 @@ function openEdit(badge) {
     corner_style: badge.corner_style || 'sharp',
     frame_style: badge.frame_style || 'none',
   }
+  editorTab.value = 'content'
   editing.value = true
   error.value = ''
 }
@@ -430,8 +449,30 @@ onMounted(async () => {
 .remove-btn { color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.875rem; }
 .form-actions { display: flex; gap: 0.75rem; padding-top: 0.5rem; }
 .error-text { color: #ef4444; font-size: 0.875rem; }
-.badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
-.badge-item { position: relative; display: flex; flex-direction: column; gap: 0.75rem; }
+.badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; align-items: stretch; }
+.badge-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.badge-item__stack {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.item-preview-scroll {
+  flex: 1 1 auto;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--bg-subtle);
+}
 .badge-item.draft { opacity: 0.88; }
 .draft-ribbon {
   position: absolute; top: 0.5rem; left: 0.5rem; z-index: 5;
@@ -439,7 +480,16 @@ onMounted(async () => {
   padding: 0.15rem 0.4rem; border-radius: 0.25rem;
   background: var(--gold-muted); color: #92680a;
 }
-.badge-item__footer { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.badge-item__footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
 .view-stat {
   display: inline-flex; align-items: baseline; gap: 0.2rem;
   padding: 0.15rem 0.5rem; border-radius: 9999px;

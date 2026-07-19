@@ -9,9 +9,10 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class DigitalMenu extends Model
 {
     protected $fillable = [
-        'user_id', 'custom_domain_id', 'slug', 'name', 'description',
+        'user_id', 'custom_domain_id', 'slug', 'template', 'name', 'description',
         'logo_path', 'background_image_path', 'theme_color', 'currency',
         'location', 'phone', 'hours', 'sections', 'is_active',
+        'qr_shape', 'dot_style', 'corner_style', 'frame_style',
     ];
 
     protected function casts(): array

@@ -5,13 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ShortLink;
 use App\Services\DomainUrlService;
+use App\Services\QrSecurityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ShortLinkController extends Controller
 {
-    public function __construct(private DomainUrlService $domains) {}
+    public function __construct(
+        private DomainUrlService $domains,
+        private QrSecurityService $security,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -30,10 +34,11 @@ class ShortLinkController extends Controller
         }
 
         $validated = $this->validated($request);
-
         if (! empty($validated['custom_domain_id']) && ! $this->domains->canUseCustomDomains($user)) {
             return response()->json(['message' => __('messages.custom_domains_pro_required')], 403);
         }
+
+        $validated = $this->prepareSmartFields($validated);
 
         $link = $user->shortLinks()->create($validated);
 
@@ -51,7 +56,7 @@ class ShortLinkController extends Controller
     {
         $this->authorizeOwner($request, $shortLink);
 
-        $shortLink->update($this->validated($request, $shortLink->id, true));
+        $shortLink->update($this->prepareSmartFields($this->validated($request, $shortLink->id, true), $shortLink->security ?? []));
 
         return response()->json($this->enrich($shortLink->fresh('customDomain')));
     }
@@ -98,21 +103,43 @@ class ShortLinkController extends Controller
             'dot_style' => 'nullable|in:square,round,rounded,dots,classy,extra-rounded',
             'corner_style' => 'nullable|in:sharp,rounded,dot,extra-round',
             'frame_style' => 'nullable|in:none,simple,rounded,banner-top,banner-bottom,badge',
+            'funnel_id' => 'nullable|exists:qr_funnels,id',
+            'routing_rules' => 'nullable|array',
+            'security' => 'nullable|array',
+            'max_scans' => 'nullable|integer|min:0|max:1000000',
         ]);
+    }
+
+    private function prepareSmartFields(array $validated, ?array $existingSecurity = null): array
+    {
+        if (isset($validated['security'])) {
+            $validated['security'] = $this->security->prepareSettingsForSave(
+                $validated['security'],
+                $existingSecurity
+            );
+            if (! empty($validated['security']['signed'])) {
+                $validated['signing_secret'] = $validated['signing_secret'] ?? bin2hex(random_bytes(16));
+            }
+        }
+
+        return $validated;
     }
 
     private function enrich(ShortLink $link): ShortLink
     {
-        $link->setAttribute('short_url', $this->domains->shortLinkUrl(
+        $shortUrl = $this->domains->shortLinkUrl(
             $link->user,
             $link->slug,
             $link->custom_domain_id
-        ));
-        $link->setAttribute('scan_url', $this->domains->shortLinkScanUrl(
+        );
+        $scanUrl = $this->domains->shortLinkScanUrl(
             $link->user,
             $link->slug,
             $link->custom_domain_id
-        ));
+        );
+        $link->setAttribute('short_url', $shortUrl);
+        $link->setAttribute('scan_url', $scanUrl);
+        $link->setAttribute('signed_scan_url', $this->security->signUrl($scanUrl, $link));
         $link->setAttribute('domain_label', $link->customDomain?->domain);
 
         return $link;

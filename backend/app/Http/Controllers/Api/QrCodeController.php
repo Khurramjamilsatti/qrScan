@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\QrCode;
 use App\Services\DomainUrlService;
 use App\Services\QrGeneratorService;
+use App\Services\QrSecurityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,6 +16,7 @@ class QrCodeController extends Controller
     public function __construct(
         private QrGeneratorService $qrGenerator,
         private DomainUrlService $domains,
+        private QrSecurityService $security,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -39,6 +41,8 @@ class QrCodeController extends Controller
             return response()->json(['message' => __('messages.custom_domains_pro_required')], 403);
         }
 
+        $validated = $this->prepareSmartFields($validated);
+
         $qrCode = $user->qrCodes()->create($validated);
 
         return response()->json($this->enrich($qrCode->load('customDomain')), 201);
@@ -56,6 +60,7 @@ class QrCodeController extends Controller
         $this->authorizeOwner($request, $qrCode);
 
         $validated = $this->validated($request, true);
+        $validated = $this->prepareSmartFields($validated, $qrCode->security ?? []);
         $qrCode->update($validated);
 
         return response()->json($this->enrich($qrCode->fresh('customDomain')));
@@ -112,18 +117,40 @@ class QrCodeController extends Controller
             'corner_style' => 'nullable|in:sharp,rounded,dot,extra-round',
             'frame_style' => 'nullable|in:none,simple,rounded,banner-top,banner-bottom,badge',
             'is_active' => 'sometimes|boolean',
+            'funnel_id' => 'nullable|exists:qr_funnels,id',
+            'routing_rules' => 'nullable|array',
+            'security' => 'nullable|array',
+            'expires_at' => 'nullable|date',
+            'max_scans' => 'nullable|integer|min:0|max:1000000',
         ];
 
         return $request->validate($rules);
     }
 
+    private function prepareSmartFields(array $validated, ?array $existingSecurity = null): array
+    {
+        if (isset($validated['security'])) {
+            $validated['security'] = $this->security->prepareSettingsForSave(
+                $validated['security'],
+                $existingSecurity
+            );
+            if (! empty($validated['security']['signed'])) {
+                $validated['signing_secret'] = $validated['signing_secret'] ?? bin2hex(random_bytes(16));
+            }
+        }
+
+        return $validated;
+    }
+
     private function enrich(QrCode $qr): QrCode
     {
-        $qr->setAttribute('scan_url', $this->domains->qrScanUrl(
+        $scanUrl = $this->domains->qrScanUrl(
             $qr->user,
             $qr->code,
             $qr->custom_domain_id
-        ));
+        );
+        $qr->setAttribute('scan_url', $scanUrl);
+        $qr->setAttribute('signed_scan_url', $this->security->signUrl($scanUrl, $qr));
         $qr->setAttribute('domain_label', $qr->customDomain?->domain);
 
         return $qr;

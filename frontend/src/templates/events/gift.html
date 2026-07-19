@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: linear-gradient(135deg, #fdf2f8, #fce7f3); color: #831843; min-height: 100vh; }
+  .invite { max-width: 400px; margin: 0 auto; background: #fff; border-radius: 24px; overflow: hidden; box-shadow: 0 16px 48px rgba(190,24,93,.15); }
+  .header { padding: 36px 20px; text-align: center; color: #fff; {{{headerBgStyle}}} }
+  .gift-icon { font-size: 48px; margin-bottom: 10px; animation: bounce 2s ease infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  h1 { font-size: 24px; font-weight: 900; }
+  .subtitle { font-size: 14px; margin-top: 8px; opacity: .92; }
+  .meta { padding: 12px 18px; text-align: center; font-size: 12px; color: #9d174d; }
+  .sections { padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .block-title { font-size: 12px; font-weight: 800; color: {{themeColor}}; margin-bottom: 8px; text-align: center; }
+  .btn { display: inline-block; padding: 12px 24px; border-radius: 999px; font-weight: 800; text-decoration: none; font-size: 14px; }
+  .btn--primary { background: linear-gradient(135deg, {{themeColor}}, #ec4899); color: #fff; box-shadow: 0 4px 14px rgba(236,72,153,.35); }
+  .block--gift { text-align: center; }
+  .scratch-card { border-radius: 20px; overflow: hidden; cursor: pointer; box-shadow: 0 8px 24px rgba(190,24,93,.2); margin: 12px 0; }
+  .scratch-card__cover { padding: 48px 20px; text-align: center; background: repeating-linear-gradient(45deg, {{themeColor}}, {{themeColor}} 10px, color-mix(in srgb, {{themeColor}} 80%, #fff) 10px, color-mix(in srgb, {{themeColor}} 80%, #fff) 20px); color: #fff; font-weight: 900; font-size: 16px; text-shadow: 0 2px 4px rgba(0,0,0,.2); }
+  .scratch-card__inner { display: none; padding: 32px 20px; text-align: center; font-size: 18px; font-weight: 600; color: {{themeColor}}; background: #fdf2f8; }
+  .scratch-card.revealed .scratch-card__cover { display: none; }
+  .scratch-card.revealed .scratch-card__inner { display: block; }
+  .video-embed { width: 100%; aspect-ratio: 16/9; border: none; border-radius: 16px; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .gallery-item { aspect-ratio: 1; border-radius: 12px; background: #fce7f3 center/cover no-repeat; }
+  .footer { padding: 10px 16px; font-size: 10px; font-family: monospace; color: #db2777; opacity: .6; word-break: break-all; }
+  {{{embedStyles}}}
+</style>
+</head>
+<body>
+  <div class="invite invite--gift tpl-{{template}}">
+    <div class="header"><div class="gift-icon">🎁</div><h1>{{title}}</h1>{{#if subtitle}}<p class="subtitle">{{subtitle}}</p>{{/if}}</div>
+    {{{metaHtml}}}
+    <div class="sections">{{{sectionsHtml}}}</div>
+    <div class="footer">{{inviteUrl}}</div>
+  </div>
+</body>
+</html>

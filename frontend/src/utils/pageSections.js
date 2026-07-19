@@ -49,6 +49,11 @@ export function getExtraLinkItems(content = {}) {
   return []
 }
 
+export function shouldShowSection(sectionId, content, livePreview = false) {
+  if (livePreview) return isSectionEnabled(sectionId, content)
+  return isSectionVisible(sectionId, content)
+}
+
 export function isSectionVisible(sectionId, content) {
   const c = normalizePageContent(content)
   if (!isSectionEnabled(sectionId, c)) return false

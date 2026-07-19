@@ -6,6 +6,8 @@ vendor/
 .env
 .env.backup
 .env.production
+backend/.env.docker
+k8s/secret.yaml
 
 # Build
 frontend/dist/

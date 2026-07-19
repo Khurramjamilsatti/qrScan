@@ -1,5 +1,5 @@
 <template>
-  <div class="qr-preview-card">
+  <div class="qr-preview-card" :class="{ 'qr-preview-card--minimal': minimal }">
     <div class="qr-frame" :class="{ 'has-bg-image': backgroundImage }" :style="frameStyle">
       <img v-if="dataUrl" :src="dataUrl" :alt="t('previews.qrPreviewAlt')" class="qr-image" />
       <div v-else class="qr-placeholder">
@@ -7,16 +7,16 @@
         <p>{{ t('previews.enterUrlToPreview') }}</p>
       </div>
     </div>
-    <div v-if="name" class="qr-meta">
+    <div v-if="name && !minimal" class="qr-meta">
       <div class="qr-meta__name">{{ name }}</div>
       <div v-if="scanUrl" class="qr-meta__scan">{{ scanUrl }}</div>
       <div v-if="domainLabel" class="qr-meta__domain">{{ domainLabel }}</div>
     </div>
-    <div v-if="destination" class="qr-dest">
+    <div v-if="destination && !minimal" class="qr-dest">
       <span class="qr-dest__label">{{ t('previews.redirectsTo') }}</span>
       <div class="qr-dest__url">{{ destination }}</div>
     </div>
-    <div class="qr-badges">
+    <div v-if="!minimal" class="qr-badges">
       <span class="badge">{{ t('common.sizePx', { size }) }}</span>
       <span class="badge">EC: {{ errorCorrection }}</span>
       <span v-if="logoUrl" class="badge badge-accent">{{ t('common.logo') }}</span>
@@ -54,6 +54,7 @@ const props = defineProps({
   frameStyle: { type: String, default: 'none' },
   scanOptimized: { type: Boolean, default: false },
   isActive: { type: Boolean, default: undefined },
+  minimal: { type: Boolean, default: false },
 })
 
 const dataUrl = ref(null)
@@ -138,4 +139,14 @@ watch(
 .badge-active { background: var(--brand-muted); color: var(--brand); border-color: color-mix(in srgb, var(--brand) 30%, transparent); }
 .badge-paused { background: var(--gold-muted); color: #92680a; border-color: color-mix(in srgb, var(--gold) 40%, transparent); }
 .badge-accent { background: var(--purple-muted); color: var(--purple); border-color: color-mix(in srgb, var(--purple) 25%, transparent); }
+.qr-preview-card--minimal {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+.qr-preview-card--minimal .qr-frame {
+  min-height: auto;
+  padding: 0.75rem;
+}
 </style>

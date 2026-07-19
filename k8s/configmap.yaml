@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qrscan-config
+  namespace: qrscan
+data:
+  APP_NAME: QRScan
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_URL: https://qrscan.digital
+  FRONTEND_URL: https://qrscan.digital
+  CNAME_TARGET: app.qrscan.digital
+  APP_LOCALE: en
+  APP_FALLBACK_LOCALE: en
+  LOG_CHANNEL: stderr
+  LOG_LEVEL: info
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_DATABASE: qrscan
+  SESSION_DRIVER: database
+  SESSION_LIFETIME: "120"
+  QUEUE_CONNECTION: database
+  CACHE_STORE: database
+  FILESYSTEM_DISK: public
+  MAIL_MAILER: log
+  RUN_MIGRATIONS: "true"
+  SANCTUM_STATEFUL_DOMAINS: qrscan.digital,www.qrscan.digital
+  STRIPE_DISABLE_PROXY: "true"
+  STRIPE_DISABLE_HTTP2: "true"

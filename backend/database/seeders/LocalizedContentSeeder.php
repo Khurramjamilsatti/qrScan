@@ -72,180 +72,279 @@ class LocalizedContentSeeder extends Seeder
 
     private function seedArabicFeatures(): void
     {
-        if (LandingFeature::where('locale', 'ar')->exists()) {
-            return;
+        foreach ($this->arabicFeatures() as $feature) {
+            LandingFeature::updateOrCreate(
+                ['locale' => 'ar', 'sort_order' => $feature['sort_order']],
+                $feature
+            );
         }
-
-        $now = now();
-        LandingFeature::insert([
-            [
-                'locale' => 'ar', 'title' => 'رموز QR', 'subtitle' => 'ديناميكية وقابلة للتتبع',
-                'description' => 'أنشئ رموز QR مخصصة يمكنك تعديلها في أي وقت — حتى بعد الطباعة.',
-                'items' => json_encode(['تعديل ديناميكي بعد الطباعة', 'تحليلات مسح فورية', 'تخصيص الشعار والألوان', 'تنزيل SVG و PNG']),
-                'icon' => 'qr', 'color' => '#10b981', 'sort_order' => 1, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'title' => 'الروابط المختصرة', 'subtitle' => 'مخصصة وقابلة للقياس',
-                'description' => 'اختصر الروابط مع روابط مخصصة وتتبع UTM وبيانات النقرات الجغرافية.',
-                'items' => json_encode(['روابط وأسماء مخصصة', 'تتبع النقرات مع البيانات الجغرافية', 'إدارة إعادة التوجيه', 'دعم معاملات UTM']),
-                'icon' => 'link', 'color' => '#f59e0b', 'sort_order' => 2, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'title' => 'بطاقات العمل الرقمية', 'subtitle' => 'ملفات قابلة للمشاركة',
-                'description' => 'استبدل البطاقات الورقية بملفات رقمية جميلة ورموز QR تلقائية.',
-                'items' => json_encode(['روابط ملف شخصي مخصصة', 'تصدير vCard وجهات الاتصال', 'روابط اجتماعية وصورة', 'رمز QR تلقائي']),
-                'icon' => 'card', 'color' => '#8b5cf6', 'sort_order' => 3, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'title' => 'الصفحات الرقمية', 'subtitle' => 'صفحات هبوط وفعاليات',
-                'description' => 'صفحات هبوط ومحافظ وفعاليات من قوالب مع معارض وتقويمات وروابط اجتماعية.',
-                'items' => json_encode(['4 قوالب', 'معرض وتقويم', 'كتل تواصل', 'أنماط QR مخصصة']),
-                'icon' => 'page', 'color' => '#e8b84a', 'sort_order' => 4, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'title' => 'القوائم الرقمية', 'subtitle' => 'قوائم مطاعم QR',
-                'description' => 'قوائم جوال جميلة مع أقسام وصور ووسوم غذائية ومشاركة QR فورية.',
-                'items' => json_encode(['قوائم متعددة الأقسام', 'صور الأطباق', 'وسوم غذائية', 'عملات متعددة']),
-                'icon' => 'menu', 'color' => '#e8655a', 'sort_order' => 5, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'title' => 'الشارات الرقمية', 'subtitle' => 'شهادات وجوائز',
-                'description' => 'أصدر شارات وشهادات رقمية قابلة للتحقق مع مهارات وتواريخ وتحقق QR.',
-                'items' => json_encode(['3 قوالب شارات', 'مهارات وانتهاء', 'رابط تحقق', 'اعتمادات QR']),
-                'icon' => 'badge', 'color' => '#6b4fa0', 'sort_order' => 6, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'title' => 'التذاكر الرقمية', 'subtitle' => 'دخول الفعاليات',
-                'description' => 'أنشئ تذاكر فعاليات قابلة للمسح مع مقاعد وباركود وتصاميم حفلات ومؤتمرات.',
-                'items' => json_encode(['4 أنماط تذاكر', 'مقعد وباركود', 'نطاق تاريخ صالح', 'QR للتسجيل']),
-                'icon' => 'ticket', 'color' => '#e8655a', 'sort_order' => 7, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'title' => 'امسح واربح', 'subtitle' => 'حملات جوائز',
-                'description' => 'شغّل حملات QR تفاعلية مع مجموعات جوائز وحدود لعب وكشف فوري أو عجلة.',
-                'items' => json_encode(['محرر مجموعة الجوائز', 'حدود اللعب اليومية', 'رسائل فوز/خسارة', 'تحليلات الحملة']),
-                'icon' => 'win', 'color' => '#e8b84a', 'sort_order' => 8, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-        ]);
     }
 
     private function seedArabicPricing(): void
     {
-        if (PricingPlan::where('locale', 'ar')->exists()) {
-            return;
+        foreach ($this->arabicPricingPlans() as $plan) {
+            PricingPlan::updateOrCreate(
+                ['slug' => $plan['slug'], 'locale' => 'ar'],
+                $plan
+            );
         }
-
-        $now = now();
-        PricingPlan::insert([
-            [
-                'locale' => 'ar', 'name' => 'مجاني', 'slug' => 'free', 'price' => 0, 'billing_period' => 'month',
-                'features' => json_encode(['رمز QR واحد', '3 روابط مختصرة', 'بطاقة عمل واحدة', '100 مسح/شهر', 'بدون تحليلات']),
-                'limits' => json_encode(['qr_codes' => 1, 'short_links' => 3, 'business_cards' => 1, 'scans' => 100]),
-                'is_popular' => false, 'is_active' => true, 'sort_order' => 1,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'name' => 'مبتدئ', 'slug' => 'starter', 'price' => 6, 'billing_period' => 'month',
-                'features' => json_encode(['10 رموز QR', 'روابط غير محدودة', '5 بطاقات عمل', '5000 مسح/شهر', 'تحليلات أساسية']),
-                'limits' => json_encode(['qr_codes' => 10, 'short_links' => -1, 'business_cards' => 5, 'scans' => 5000]),
-                'is_popular' => false, 'is_active' => true, 'sort_order' => 2,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'name' => 'احترافي', 'slug' => 'pro', 'price' => 20, 'billing_period' => 'month',
-                'features' => json_encode(['رموز QR غير محدودة', 'نطاق مخصص', 'بطاقات غير محدودة', '50000 مسح/شهر', 'تحليلات كاملة']),
-                'limits' => json_encode(['qr_codes' => -1, 'short_links' => -1, 'business_cards' => -1, 'scans' => 50000]),
-                'is_popular' => true, 'is_active' => true, 'sort_order' => 3,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'name' => 'أعمال', 'slug' => 'business', 'price' => 50, 'billing_period' => 'month',
-                'features' => json_encode(['علامة بيضاء', 'مقاعد فريق', 'وصول API', 'مسح غير محدود', 'دعم أولوية']),
-                'limits' => json_encode(['qr_codes' => -1, 'short_links' => -1, 'business_cards' => -1, 'scans' => -1]),
-                'is_popular' => false, 'is_active' => true, 'sort_order' => 4,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-        ]);
     }
 
     private function seedArabicTestimonials(): void
     {
-        if (Testimonial::where('locale', 'ar')->exists()) {
-            return;
+        foreach ($this->arabicTestimonials() as $testimonial) {
+            Testimonial::updateOrCreate(
+                ['locale' => 'ar', 'sort_order' => $testimonial['sort_order']],
+                $testimonial
+            );
         }
-
-        $now = now();
-        Testimonial::insert([
-            [
-                'locale' => 'ar', 'name' => 'سارة الشمري', 'role' => 'مديرة التسويق', 'company' => 'استوديو بلوم',
-                'content' => 'QRScan حل محل ثلاث أدوات لدينا. رموز QR الديناميكية وحدها وفرت ميزانية الطباعة.',
-                'avatar' => null, 'rating' => 5, 'sort_order' => 1, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'name' => 'مازن العتيبي', 'role' => 'مؤسس', 'company' => 'لونش باد',
-                'content' => 'روابط الفعاليات المختصرة مع تتبع UTM أعطتنا وضوحاً لم نحصل عليه من قبل.',
-                'avatar' => null, 'rating' => 5, 'sort_order' => 2, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-            [
-                'locale' => 'ar', 'name' => 'ليلى الحربي', 'role' => 'قائدة المبيعات', 'company' => 'نكسس',
-                'content' => 'بطاقات العمل الرقمية مع رموز QR — فريقنا يحبها في المؤتمرات.',
-                'avatar' => null, 'rating' => 5, 'sort_order' => 3, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ],
-        ]);
     }
 
     private function seedArabicSitePages(): void
     {
-        if (SitePage::where('locale', 'ar')->exists()) {
-            return;
+        foreach ($this->arabicSitePages() as $page) {
+            SitePage::updateOrCreate(
+                ['slug' => $page['slug'], 'locale' => 'ar'],
+                $page
+            );
         }
+    }
 
-        $now = now();
-        SitePage::insert([
+    /** @return list<array<string, mixed>> */
+    private function arabicFeatures(): array
+    {
+        return [
             [
-                'locale' => 'ar', 'slug' => 'support', 'title' => 'الدعم',
-                'intro' => 'نحن هنا لمساعدتك في الاستفادة القصوى من QRScan.',
-                'content' => "هل تحتاج مساعدة في رموز QR أو الصفحات الرقمية أو التذاكر أو حسابك؟\n\nتصفح مواردنا أو تواصل مع الفريق — نرد عادة خلال يوم عمل واحد.\n\n**مواضيع شائعة**\n- إعداد أول رمز QR\n- ربط نطاق مخصص\n- نشر الصفحات والقوائم والشارات والتذاكر\n- حملات امسح واربح\n- الفوترة وترقية الخطة",
-                'contact_info' => json_encode(['email' => 'support@qrscan.digital', 'hours' => 'الإثنين–الجمعة، 9 ص–6 م UTC']),
-                'is_active' => true, 'created_at' => $now, 'updated_at' => $now,
+                'locale' => 'ar',
+                'title' => 'رموز QR',
+                'subtitle' => 'ديناميكية وقابلة للتتبع',
+                'description' => 'أنشئ رموز QR مخصصة يمكنك تعديلها في أي وقت — حتى بعد الطباعة.',
+                'items' => ['تعديل ديناميكي بعد الطباعة', 'تحليلات مسح فورية', 'تخصيص الشعار والألوان', 'تنزيل SVG و PNG'],
+                'icon' => 'qr',
+                'color' => '#10b981',
+                'sort_order' => 1,
+                'is_active' => true,
             ],
             [
-                'locale' => 'ar', 'slug' => 'contact', 'title' => 'تواصل معنا',
+                'locale' => 'ar',
+                'title' => 'الروابط المختصرة',
+                'subtitle' => 'مخصصة وقابلة للقياس',
+                'description' => 'اختصر الروابط مع روابط مخصصة وتتبع UTM وبيانات النقرات الجغرافية.',
+                'items' => ['روابط وأسماء مخصصة', 'تتبع النقرات مع البيانات الجغرافية', 'إدارة إعادة التوجيه', 'دعم معاملات UTM'],
+                'icon' => 'link',
+                'color' => '#f59e0b',
+                'sort_order' => 2,
+                'is_active' => true,
+            ],
+            [
+                'locale' => 'ar',
+                'title' => 'بطاقات العمل الرقمية',
+                'subtitle' => 'ملفات قابلة للمشاركة',
+                'description' => 'استبدل البطاقات الورقية بملفات رقمية جميلة ورموز QR تلقائية.',
+                'items' => ['روابط ملف شخصي مخصصة', 'تصدير vCard وجهات الاتصال', 'روابط اجتماعية وصورة', 'رمز QR تلقائي'],
+                'icon' => 'card',
+                'color' => '#8b5cf6',
+                'sort_order' => 3,
+                'is_active' => true,
+            ],
+            [
+                'locale' => 'ar',
+                'title' => 'الصفحات الرقمية',
+                'subtitle' => 'صفحات هبوط وفعاليات',
+                'description' => 'صفحات هبوط ومحافظ وفعاليات من قوالب مع معارض وتقويمات وروابط اجتماعية.',
+                'items' => ['4 قوالب', 'معرض وتقويم', 'كتل تواصل', 'أنماط QR مخصصة'],
+                'icon' => 'page',
+                'color' => '#e8b84a',
+                'sort_order' => 4,
+                'is_active' => true,
+            ],
+            [
+                'locale' => 'ar',
+                'title' => 'القوائم الرقمية',
+                'subtitle' => 'قوائم مطاعم QR',
+                'description' => 'قوائم جوال جميلة مع أقسام وصور ووسوم غذائية ومشاركة QR فورية.',
+                'items' => ['قوائم متعددة الأقسام', 'صور الأطباق', 'وسوم غذائية', 'عملات متعددة'],
+                'icon' => 'menu',
+                'color' => '#e8655a',
+                'sort_order' => 5,
+                'is_active' => true,
+            ],
+            [
+                'locale' => 'ar',
+                'title' => 'الشارات الرقمية',
+                'subtitle' => 'شهادات وجوائز',
+                'description' => 'أصدر شارات وشهادات رقمية قابلة للتحقق مع مهارات وتواريخ وتحقق QR.',
+                'items' => ['3 قوالب شارات', 'مهارات وانتهاء', 'رابط تحقق', 'اعتمادات QR'],
+                'icon' => 'badge',
+                'color' => '#6b4fa0',
+                'sort_order' => 6,
+                'is_active' => true,
+            ],
+            [
+                'locale' => 'ar',
+                'title' => 'التذاكر الرقمية',
+                'subtitle' => 'دخول الفعاليات',
+                'description' => 'أنشئ تذاكر فعاليات قابلة للمسح مع مقاعد وباركود وتصاميم حفلات ومؤتمرات.',
+                'items' => ['4 أنماط تذاكر', 'مقعد وباركود', 'نطاق تاريخ صالح', 'QR للتسجيل'],
+                'icon' => 'ticket',
+                'color' => '#e8655a',
+                'sort_order' => 7,
+                'is_active' => true,
+            ],
+            [
+                'locale' => 'ar',
+                'title' => 'امسح واربح',
+                'subtitle' => 'حملات جوائز',
+                'description' => 'شغّل حملات QR تفاعلية مع مجموعات جوائز وحدود لعب وكشف فوري أو عجلة.',
+                'items' => ['محرر مجموعة الجوائز', 'حدود اللعب اليومية', 'رسائل فوز/خسارة', 'تحليلات الحملة'],
+                'icon' => 'win',
+                'color' => '#e8b84a',
+                'sort_order' => 8,
+                'is_active' => true,
+            ],
+        ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function arabicPricingPlans(): array
+    {
+        return [
+            [
+                'locale' => 'ar',
+                'name' => 'مجاني',
+                'slug' => 'free',
+                'price' => 0,
+                'billing_period' => 'month',
+                'features' => ['رمز QR واحد', '3 روابط مختصرة', 'بطاقة عمل واحدة', '100 مسح/شهر', 'بدون تحليلات'],
+                'limits' => ['qr_codes' => 1, 'short_links' => 3, 'business_cards' => 1, 'scans' => 100],
+                'is_popular' => false,
+                'is_active' => true,
+                'sort_order' => 1,
+            ],
+            [
+                'locale' => 'ar',
+                'name' => 'مبتدئ',
+                'slug' => 'starter',
+                'price' => 6,
+                'billing_period' => 'month',
+                'features' => ['10 رموز QR', 'روابط غير محدودة', '5 بطاقات عمل', '5000 مسح/شهر', 'تحليلات أساسية'],
+                'limits' => ['qr_codes' => 10, 'short_links' => -1, 'business_cards' => 5, 'scans' => 5000],
+                'is_popular' => false,
+                'is_active' => true,
+                'sort_order' => 2,
+            ],
+            [
+                'locale' => 'ar',
+                'name' => 'احترافي',
+                'slug' => 'pro',
+                'price' => 20,
+                'billing_period' => 'month',
+                'features' => ['رموز QR غير محدودة', 'نطاق مخصص', 'بطاقات غير محدودة', '50000 مسح/شهر', 'تحليلات كاملة'],
+                'limits' => ['qr_codes' => -1, 'short_links' => -1, 'business_cards' => -1, 'scans' => 50000],
+                'is_popular' => true,
+                'is_active' => true,
+                'sort_order' => 3,
+            ],
+            [
+                'locale' => 'ar',
+                'name' => 'أعمال',
+                'slug' => 'business',
+                'price' => 50,
+                'billing_period' => 'month',
+                'features' => ['علامة بيضاء', 'مقاعد فريق', 'وصول API', 'مسح غير محدود', 'دعم أولوية'],
+                'limits' => ['qr_codes' => -1, 'short_links' => -1, 'business_cards' => -1, 'scans' => -1],
+                'is_popular' => false,
+                'is_active' => true,
+                'sort_order' => 4,
+            ],
+        ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function arabicTestimonials(): array
+    {
+        return [
+            [
+                'locale' => 'ar',
+                'name' => 'سارة الشمري',
+                'role' => 'مديرة التسويق',
+                'company' => 'استوديو بلوم',
+                'content' => 'QRScan حل محل ثلاث أدوات لدينا. رموز QR الديناميكية وحدها وفرت ميزانية الطباعة.',
+                'avatar' => null,
+                'rating' => 5,
+                'sort_order' => 1,
+                'is_active' => true,
+            ],
+            [
+                'locale' => 'ar',
+                'name' => 'مازن العتيبي',
+                'role' => 'مؤسس',
+                'company' => 'لونش باد',
+                'content' => 'روابط الفعاليات المختصرة مع تتبع UTM أعطتنا وضوحاً لم نحصل عليه من قبل.',
+                'avatar' => null,
+                'rating' => 5,
+                'sort_order' => 2,
+                'is_active' => true,
+            ],
+            [
+                'locale' => 'ar',
+                'name' => 'ليلى الحربي',
+                'role' => 'قائدة المبيعات',
+                'company' => 'نكسس',
+                'content' => 'بطاقات العمل الرقمية مع رموز QR — فريقنا يحبها في المؤتمرات.',
+                'avatar' => null,
+                'rating' => 5,
+                'sort_order' => 3,
+                'is_active' => true,
+            ],
+        ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function arabicSitePages(): array
+    {
+        return [
+            [
+                'locale' => 'ar',
+                'slug' => 'support',
+                'title' => 'الدعم',
+                'intro' => 'نحن هنا لمساعدتك في الاستفادة القصوى من QRScan.',
+                'content' => "هل تحتاج مساعدة في رموز QR أو الصفحات الرقمية أو التذاكر أو حسابك؟\n\nتصفح مواردنا أو تواصل مع الفريق — نرد عادة خلال يوم عمل واحد.\n\n**مواضيع شائعة**\n- إعداد أول رمز QR\n- ربط نطاق مخصص\n- نشر الصفحات والقوائم والشارات والتذاكر\n- حملات امسح واربح\n- الفوترة وترقية الخطة",
+                'contact_info' => ['email' => 'support@qrscan.digital', 'hours' => 'الإثنين–الجمعة، 9 ص–6 م UTC'],
+                'is_active' => true,
+            ],
+            [
+                'locale' => 'ar',
+                'slug' => 'contact',
+                'title' => 'تواصل معنا',
                 'intro' => 'أسئلة أو شراكات أو خطط مؤسسات — يسعدنا سماعك.',
                 'content' => "أرسل لنا رسالة وسيعود فريقنا إليك قريباً.\n\nللمشاكل العاجلة في الحساب، راسل الدعم مباشرة. للمبيعات والشراكات، استخدم بيانات التواصل أدناه.",
-                'contact_info' => json_encode([
+                'contact_info' => [
                     'email' => 'hello@qrscan.digital',
                     'phone' => '+1 (555) 012-3456',
                     'address' => 'QRScan Inc., 100 Market Street, San Francisco, CA 94105',
                     'hours' => 'الإثنين–الجمعة، 9 ص–6 م UTC',
-                ]),
-                'is_active' => true, 'created_at' => $now, 'updated_at' => $now,
+                ],
+                'is_active' => true,
             ],
             [
-                'locale' => 'ar', 'slug' => 'privacy', 'title' => 'سياسة الخصوصية',
+                'locale' => 'ar',
+                'slug' => 'privacy',
+                'title' => 'سياسة الخصوصية',
                 'intro' => 'آخر تحديث: يونيو 2026',
                 'content' => "**المعلومات التي نجمعها**\nنجمع معلومات الحساب (الاسم، البريد) وبيانات الاستخدام (مسح، نقرات، مشاهدات) وبيانات تحليلات (الدولة، المصدر) عند استخدام خدمات QRScan.\n\n**كيف نستخدم البيانات**\nلتقديم المنصة وتحسينها ومعالجة التحليلات وتطبيق حدود الخطة والتواصل بخصوص حسابك.\n\n**مشاركة البيانات**\nلا نبيع البيانات الشخصية. نستخدم مزودي بنية تحتية موثوقين.\n\n**حقوقك**\nيمكنك طلب الوصول أو التصحيح أو الحذف بالتواصل معنا.\n\n**ملفات تعريف الارتباط**\nنستخدم cookies أساسية للمصادقة والتفضيلات (بما في ذلك السمة).",
                 'contact_info' => null,
-                'is_active' => true, 'created_at' => $now, 'updated_at' => $now,
+                'is_active' => true,
             ],
             [
-                'locale' => 'ar', 'slug' => 'terms', 'title' => 'شروط الخدمة',
+                'locale' => 'ar',
+                'slug' => 'terms',
+                'title' => 'شروط الخدمة',
                 'intro' => 'آخر تحديث: يونيو 2026',
                 'content' => "**القبول**\nباستخدام QRScan فإنك توافق على هذه الشروط.\n\n**محتواك**\nتحتفظ بملكية الرموز والروابط والصفحات والقوائم والشارات والتذاكر والحملات التي تنشئها. أنت مسؤول عن امتثال المحتوى للقوانين.\n\n**الاستخدام المقبول**\nلا تستخدم QRScan للبريد العشوائي أو البرمجيات الخبيثة أو المحتوى غير القانوني أو انتهاك حقوق الغير.\n\n**الخطط والفوترة**\nالخطط المدفوعة تتجدد شهرياً ما لم تُلغَ. تنطبق حدود الاستخدام حسب الخطة.\n\n**حدود المسؤولية**\nتُقدّم QRScan \"كما هي\" دون ضمانات.\n\n**التغييرات**\nقد نحدّث هذه الشروط؛ الاستمرار في الاستخدام يعني القبول.",
                 'contact_info' => null,
-                'is_active' => true, 'created_at' => $now, 'updated_at' => $now,
+                'is_active' => true,
             ],
-        ]);
+        ];
     }
 }

@@ -13,7 +13,7 @@
       :logo="logo"
       :background-image="backgroundImage"
     />
-    <div v-if="campaignUrl" class="module-preview__url">
+    <div v-if="campaignUrl && !compact" class="module-preview__url">
       <span class="module-preview__label">{{ t('common.publicUrl') }}</span>
       <span class="module-preview__link">{{ campaignUrl }}</span>
     </div>
@@ -39,6 +39,7 @@ defineProps({
   logo: String,
   backgroundImage: String,
   campaignUrl: String,
+  compact: { type: Boolean, default: false },
 })
 </script>
 

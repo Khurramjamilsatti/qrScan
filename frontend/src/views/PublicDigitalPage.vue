@@ -35,28 +35,28 @@
     <main v-else class="page-center" :class="{ wide: hasGallery }">
       <div class="published-badge"><span class="badge-dot"></span>{{ t('public.digitalPage') }}</div>
       <article class="public-card">
-        <PageTemplateRenderer
-          :title="page.title"
-          :template="page.template"
-          :content="pageContent"
-          :theme-color="themeColor"
-          :logo="page.logo_path"
-          :background-image="page.background_image_path"
+        <HtmlDocumentPreview
+          :html="pageHtml"
+          title="Digital page"
+          expandable
+          embedded
         />
-        <div class="share-qr">
-          <p class="share-label">{{ t('public.shareThisPage') }}</p>
-          <QrPreview
-            :content="pageUrl"
-            :name="page.title"
-            :foreground="themeColor"
-            :logo-url="page.logo_path"
-            :background-image="page.background_image_path"
-            :size="160"
-            :qr-shape="page.qr_shape || 'square'"
-            :dot-style="page.dot_style || 'square'"
-            :corner-style="page.corner_style || 'sharp'"
-            :frame-style="page.frame_style || 'none'"
-          />
+        <div class="page-qr">
+          <p class="page-qr__label">{{ t('public.shareThisPage') }}</p>
+          <div class="page-qr__code">
+            <QrPreview
+              :content="pageUrl"
+              :foreground="themeColor"
+              :logo-url="page.logo_path"
+              :background-image="page.background_image_path"
+              :size="160"
+              minimal
+              :qr-shape="page.qr_shape || 'square'"
+              :dot-style="page.dot_style || 'square'"
+              :corner-style="page.corner_style || 'sharp'"
+              :frame-style="page.frame_style || 'none'"
+            />
+          </div>
         </div>
       </article>
     </main>
@@ -70,9 +70,10 @@ import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import ThemeToggle from '../components/ui/ThemeToggle.vue'
 import PublicBrandHeader from '../components/ui/PublicBrandHeader.vue'
-import PageTemplateRenderer from '../components/pages/PageTemplateRenderer.vue'
+import HtmlDocumentPreview from '../components/previews/HtmlDocumentPreview.vue'
 import QrPreview from '../components/previews/QrPreview.vue'
 import { mergePageContent } from '../utils/pageTemplates'
+import { renderPageHtml } from '../utils/pageHtmlRenderer'
 
 const { t } = useI18n()
 
@@ -88,6 +89,15 @@ const pageContent = computed(() => {
   if (!page.value) return {}
   return mergePageContent(page.value.template, page.value.content || {})
 })
+const pageHtml = computed(() => page.value ? renderPageHtml({
+  title: page.value.title,
+  template: page.value.template,
+  content: pageContent.value,
+  themeColor: themeColor.value,
+  logo: page.value.logo_path,
+  backgroundImage: page.value.background_image_path,
+  publicView: true,
+}) : '')
 const hasGallery = computed(() => {
   const g = page.value?.content?.gallery
   return g?.enabled && (g?.items?.length || 0) > 0
@@ -123,10 +133,11 @@ onMounted(load)
   display: flex; justify-content: space-between; align-items: center;
   padding: 1rem 1.5rem; max-width: 48rem; margin: 0 auto;
 }
-.brand-link { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #1a1333; text-decoration: none; font-size: 0.9375rem; }
-.brand-icon { color: #e8655a; }
-.brand-accent { color: #e8b84a; }
-.page-center { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 1rem 1rem 3rem; max-width: 28rem; margin: 0 auto; }
+.page-center {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 1rem 1rem 3rem; max-width: 28rem; margin: 0 auto;
+}
 .page-center.wide { max-width: 36rem; }
 .published-badge {
   display: inline-flex; align-items: center; gap: 0.375rem;
@@ -134,9 +145,45 @@ onMounted(load)
   color: #6b4fa0; margin-bottom: 0.75rem;
 }
 .badge-dot { width: 0.375rem; height: 0.375rem; border-radius: 50%; background: #e8655a; }
-.public-card { width: 100%; }
-.share-qr { margin-top: 1.5rem; text-align: center; }
-.share-label { font-size: 0.75rem; font-weight: 600; color: #8b839c; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+
+.public-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 1.5rem;
+  border: 1px solid #e8e4f0;
+  box-shadow: 0 8px 28px rgba(26, 19, 51, 0.08);
+  overflow: hidden;
+}
+
+.page-qr {
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 1px solid #e8e4f0;
+  text-align: center;
+}
+.page-qr__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #8b839c;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+.page-qr__code {
+  display: flex;
+  justify-content: center;
+}
+.page-qr__code :deep(.qr-preview-card--minimal) {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.page-qr__code :deep(.qr-frame) {
+  min-height: auto;
+  padding: 0;
+  background: transparent !important;
+}
+
 .loader-card, .state-card {
   width: 100%; background: #fff; border-radius: 1.25rem; padding: 2rem;
   border: 1px solid #e8e4f0; text-align: center; box-shadow: 0 4px 24px rgba(26,19,51,0.06);

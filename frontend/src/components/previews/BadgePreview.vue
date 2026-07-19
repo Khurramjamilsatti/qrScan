@@ -17,7 +17,7 @@
       :background-image="backgroundImage"
       :badge-image="badgeImage"
     />
-    <div v-if="badgeUrl" class="module-preview__url">
+    <div v-if="badgeUrl && !compact" class="module-preview__url">
       <span class="module-preview__label">{{ t('common.publicUrl') }}</span>
       <span class="module-preview__link">{{ badgeUrl }}</span>
     </div>
@@ -47,6 +47,7 @@ defineProps({
   backgroundImage: String,
   badgeImage: String,
   badgeUrl: String,
+  compact: { type: Boolean, default: false },
 })
 </script>
 

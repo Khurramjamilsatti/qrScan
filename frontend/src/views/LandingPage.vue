@@ -212,7 +212,7 @@ const content = ref(null)
 const loading = ref(true)
 const error = ref(null)
 const scrolled = ref(false)
-const iconMap = { qr: '▦', link: '🔗', card: '👤', page: '📄', menu: '🍽', badge: '🏅', ticket: '🎫', win: '🎰' }
+const iconMap = { qr: '▦', link: '🔗', card: '👤', page: '📄', menu: '🍽', badge: '🏅', ticket: '🎫', win: '🎰', form: '📝' }
 
 const heroTitle = computed(() => {
   const title = content.value?.hero?.title || ''

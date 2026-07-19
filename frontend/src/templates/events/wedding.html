@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, 'Times New Roman', serif; background: #f8f4ee; color: #2c1810; }
+  .invite { max-width: 400px; margin: 0 auto; background: #fff; border-radius: 4px; overflow: hidden; border: 1px solid #e8dfd0; box-shadow: 0 12px 40px rgba(44,24,16,.1); }
+  .header { position: relative; padding: 36px 24px; min-height: 140px; color: #fff; {{{headerBgStyle}}} }
+  .header .overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(44,24,16,.05), rgba(44,24,16,.5)); }
+  .header-inner { position: relative; z-index: 1; text-align: center; }
+  .ornament { font-size: 28px; margin-bottom: 8px; opacity: .9; }
+  h1 { font-size: 26px; font-weight: 400; letter-spacing: .04em; line-height: 1.25; font-style: italic; }
+  .subtitle { font-size: 13px; opacity: .92; margin-top: 10px; font-family: system-ui, sans-serif; }
+  .meta { padding: 18px 24px; text-align: center; font-size: 12px; line-height: 1.6; color: #6b5c4f; border-bottom: 1px solid #f0e8dc; font-family: system-ui, sans-serif; }
+  .sections { padding: 18px 24px 24px; display: flex; flex-direction: column; gap: 18px; font-family: system-ui, sans-serif; }
+  .block-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: {{themeColor}}; margin-bottom: 10px; text-align: center; }
+  .btn { display: inline-block; padding: 11px 22px; border-radius: 2px; font-size: 12px; font-weight: 700; text-decoration: none; letter-spacing: .06em; text-transform: uppercase; }
+  .btn--primary { background: {{themeColor}}; color: #fff; }
+  .btn--outline { border: 1px solid {{themeColor}}; color: {{themeColor}}; background: transparent; }
+  .block--rsvp, .block--calendar { text-align: center; }
+  .countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+  .countdown__num { font-size: 22px; font-weight: 300; color: {{themeColor}}; font-family: Georgia, serif; }
+  .countdown__label { font-size: 9px; text-transform: uppercase; color: #a89888; }
+  .schedule-item { padding: 12px 0; border-bottom: 1px solid #f0e8dc; text-align: center; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .gallery-item { aspect-ratio: 4/3; border-radius: 2px; background: #f0e8dc center/cover no-repeat; }
+  .registry-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .registry-link { padding: 8px 14px; border: 1px solid #e8dfd0; font-size: 11px; color: {{themeColor}}; text-decoration: none; }
+  .guest-msg { padding: 12px; border-left: 3px solid {{themeColor}}; margin-bottom: 8px; font-size: 12px; background: #faf6f0; }
+  .video-embed { width: 100%; aspect-ratio: 16/9; border: none; }
+  .scratch-card { border-radius: 4px; overflow: hidden; cursor: pointer; }
+  .scratch-card__cover { padding: 40px 16px; text-align: center; background: {{themeColor}}; color: #fff; font-weight: 600; }
+  .scratch-card__inner { display: none; padding: 24px; text-align: center; }
+  .scratch-card.revealed .scratch-card__cover { display: none; }
+  .scratch-card.revealed .scratch-card__inner { display: block; }
+  .footer { padding: 10px 16px; border-top: 1px solid #f0e8dc; font-size: 10px; font-family: monospace; color: #a89888; word-break: break-all; }
+  {{{embedStyles}}}
+</style>
+</head>
+<body>
+  <div class="invite invite--wedding tpl-{{template}}">
+    <div class="header"><div class="overlay"></div><div class="header-inner"><div class="ornament">✦</div><h1>{{title}}</h1>{{#if subtitle}}<p class="subtitle">{{subtitle}}</p>{{/if}}</div></div>
+    {{{metaHtml}}}
+    <div class="sections">{{{sectionsHtml}}}</div>
+    <div class="footer">{{inviteUrl}}</div>
+  </div>
+</body>
+</html>

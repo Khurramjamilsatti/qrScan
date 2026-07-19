@@ -143,6 +143,7 @@ class BusinessCardController extends Controller
     {
         return $request->validate([
             'slug' => ['required', 'string', 'alpha_dash', 'min:3', 'max:50', Rule::unique('business_cards')->ignore($ignoreId)],
+            'template' => 'nullable|in:classic,modern,bold,minimal,executive,corporate,creative,gradient,photo,split,sidebar,compact',
             'full_name' => ($ignoreId ? 'sometimes|' : '').'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
             'company' => 'nullable|string|max:255',

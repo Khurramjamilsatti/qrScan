@@ -11,6 +11,9 @@ use Illuminate\Validation\Rule;
 
 class DigitalMenuController extends Controller
 {
+    private const MENU_TEMPLATES = [
+        'classic', 'restaurant', 'bistro', 'elegant', 'modern', 'cafe', 'brunch', 'minimal', 'compact', 'grid',
+    ];
     public function __construct(private DomainUrlService $domains) {}
 
     public function index(Request $request): JsonResponse
@@ -76,6 +79,7 @@ class DigitalMenuController extends Controller
     {
         return $request->validate([
             'slug' => ['required', 'string', 'alpha_dash', 'min:3', 'max:50', Rule::unique('digital_menus')->ignore($ignoreId)],
+            'template' => ['nullable', 'string', Rule::in(self::MENU_TEMPLATES)],
             'name' => ($ignoreId ? 'sometimes|' : '').'required|string|max:255',
             'description' => 'nullable|string|max:2000',
             'logo_path' => 'nullable|string|max:500',
@@ -88,6 +92,10 @@ class DigitalMenuController extends Controller
             'sections' => 'nullable|array',
             'custom_domain_id' => 'nullable|exists:custom_domains,id',
             'is_active' => 'sometimes|boolean',
+            'qr_shape' => 'nullable|string|max:20',
+            'dot_style' => 'nullable|string|max:20',
+            'corner_style' => 'nullable|string|max:20',
+            'frame_style' => 'nullable|string|max:20',
         ]);
     }
 

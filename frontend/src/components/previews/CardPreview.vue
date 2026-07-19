@@ -1,13 +1,14 @@
 <template>
-  <div class="card-preview" :style="{ '--theme': themeColor }">
-    <div class="card-header" :class="{ 'has-bg': bgUrl }" :style="headerStyle">
+  <div class="card-preview" :class="[`card-preview--${cardLayout}`]" :style="{ '--theme': themeColor }">
+    <div v-if="cardLayout !== 'minimal'" class="card-header" :class="{ 'has-bg': bgUrl }" :style="headerStyle">
       <img v-if="logoUrl" :src="logoUrl" alt="" class="card-logo" />
     </div>
-    <div class="card-content">
+    <div class="card-content" :class="{ 'card-content--minimal': cardLayout === 'minimal' }">
       <div class="avatar" :style="{position:'relative',zIndex:10}">
         <img v-if="photoUrl" :src="photoUrl" alt="" class="avatar-img" />
         <span v-else class="avatar-letter">{{ initial }}</span>
       </div>
+      <img v-if="cardLayout === 'minimal' && logoUrl" :src="logoUrl" alt="" class="card-logo-minimal" />
       <h3 class="card-name">{{ fullName || t('previews.yourName') }}</h3>
       <p v-if="tagline" class="card-tagline">{{ tagline }}</p>
       <p class="card-role">
@@ -42,6 +43,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { resolveStorageUrl } from '../../utils/storageUrl'
+import { getCardTemplateLayout } from '../../utils/digitalModules'
 
 const { t } = useI18n()
 
@@ -50,8 +52,11 @@ const props = defineProps({
   email: String, phone: String, website: String, address: String,
   photo: String, logo: String, backgroundImage: String, slug: String, cardUrl: String, domainLabel: String,
   themeColor: { type: String, default: '#e8655a' },
+  template: { type: String, default: 'classic' },
   socialLinks: { type: Array, default: () => [] },
 })
+
+const cardLayout = computed(() => getCardTemplateLayout(props.template))
 
 const photoUrl = computed(() => resolveStorageUrl(props.photo))
 const logoUrl = computed(() => resolveStorageUrl(props.logo))
@@ -89,9 +94,11 @@ function cleanUrl(url) {
   justify-content: flex-end;
   padding: 0.5rem;
   overflow: hidden;
+  border-radius: 1.25rem 1.25rem 0 0;
 }
 .card-logo { position: relative; z-index: 3; width: 2.5rem; height: 2.5rem; object-fit: contain; background: white; border-radius: 0.5rem; padding: 0.25rem; box-shadow: var(--shadow-sm); }
 .card-content { position: relative; z-index: 5; padding: 0 1.25rem 1.25rem; margin-top: -2rem; }
+.card-content--minimal { margin-top: 0; padding-top: 1.25rem; text-align: center; }
 .avatar {
   position: relative;
   z-index: 10;
@@ -101,6 +108,13 @@ function cleanUrl(url) {
 }
 .avatar-letter { font-size: 1.75rem; font-weight: 700; color: var(--theme); }
 .avatar-img { width: 100%; height: 100%; object-fit: cover; }
+.card-logo-minimal {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  margin: 0.75rem auto 0;
+  display: block;
+}
 .card-name { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-top: 0.75rem; }
 .card-tagline { font-size: 0.8125rem; color: var(--theme); font-weight: 500; margin-top: 0.125rem; }
 .card-role { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; }
@@ -116,4 +130,25 @@ function cleanUrl(url) {
 .card-footer { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
 .slug { font-size: 0.75rem; font-family: monospace; color: var(--text-muted); display: block; }
 .domain-tag { font-size: 0.6875rem; color: var(--purple); margin-top: 0.25rem; display: block; }
+
+/* Modern */
+.card-preview--modern .card-header { height: 4.5rem; border-radius: 1.5rem 1.5rem 0 0; }
+.card-preview--modern .avatar { width: 5rem; height: 5rem; border-radius: 50%; margin: 0 auto; }
+.card-preview--modern .card-content { text-align: center; margin-top: -2.5rem; }
+.card-preview--modern .card-content .avatar { margin-left: auto; margin-right: auto; }
+.card-preview--modern .contact-list { align-items: center; }
+.card-preview--modern .social-row { justify-content: center; }
+
+/* Bold */
+.card-preview--bold .card-header { height: 6.5rem; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; }
+.card-preview--bold .card-header:not(.has-bg) { color: white; }
+.card-preview--bold .card-content { margin-top: -2.75rem; }
+.card-preview--bold .avatar { width: 5.25rem; height: 5.25rem; border-radius: 1.25rem; border-width: 4px; }
+.card-preview--bold .card-name { font-size: 1.4rem; }
+
+/* Minimal */
+.card-preview--minimal { border-radius: 1rem; }
+.card-preview--minimal .avatar { width: 4rem; height: 4rem; border-radius: 50%; margin: 0 auto; border: 2px solid color-mix(in srgb, var(--theme) 25%, var(--border)); box-shadow: none; }
+.card-preview--minimal .card-name { margin-top: 0.625rem; }
+.card-preview--minimal .card-bio { text-align: center; }
 </style>

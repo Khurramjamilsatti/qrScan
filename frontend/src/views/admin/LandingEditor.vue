@@ -8,8 +8,15 @@
             <h2 class="text-lg font-bold text-slate-900">{{ t('admin.landingEditorTitle') }}</h2>
             <p class="text-sm text-slate-500">{{ t('admin.landingEditorSub') }}</p>
           </div>
-          <p v-if="message" class="text-brand-600 font-medium text-sm">{{ message }}</p>
+          <div class="flex items-center gap-3">
+            <div class="locale-toggle">
+              <button type="button" :class="{ active: editLocale === 'en' }" @click="switchLocale('en')">EN</button>
+              <button type="button" :class="{ active: editLocale === 'ar' }" @click="switchLocale('ar')">AR</button>
+            </div>
+            <p v-if="message" class="text-brand-600 font-medium text-sm">{{ message }}</p>
+          </div>
         </div>
+        <p v-if="loadError" class="text-red-500 text-sm">{{ loadError }}</p>
 
       <!-- Section headings -->
       <section class="dashboard-card">
@@ -104,14 +111,14 @@
           <h2 class="font-semibold text-lg">{{ t('admin.testimonials') }}</h2>
           <button @click="editTestimonial(null)" class="btn-primary text-sm">{{ t('admin.addTestimonialBtn') }}</button>
         </div>
-        <div v-for="t in testimonials" :key="t.id" class="border border-slate-100 rounded-xl p-4 mb-3 flex items-center justify-between">
+        <div v-for="item in testimonials" :key="item.id" class="border border-slate-100 rounded-xl p-4 mb-3 flex items-center justify-between">
           <div>
-            <div class="font-medium">{{ t.name }}</div>
-            <div class="text-sm text-slate-500">{{ t.content?.slice(0, 80) }}...</div>
+            <div class="font-medium">{{ item.name }}</div>
+            <div class="text-sm text-slate-500">{{ item.content?.slice(0, 80) }}...</div>
           </div>
           <div class="flex gap-2">
-            <button @click="editTestimonial(t)" class="btn-ghost text-sm">{{ t('common.edit') }}</button>
-            <button @click="deleteTestimonial(t)" class="btn-ghost text-sm text-red-500">{{ t('common.delete') }}</button>
+            <button @click="editTestimonial(item)" class="btn-ghost text-sm">{{ t('common.edit') }}</button>
+            <button @click="deleteTestimonial(item)" class="btn-ghost text-sm text-red-500">{{ t('common.delete') }}</button>
           </div>
         </div>
       </section>
@@ -138,13 +145,13 @@
             {{ t('landing.liveLandingPreview') }}
           </div>
           <LandingPreview
-            :hero="hero"
-            :stats="stats"
+            :hero="previewHero"
+            :stats="previewStats"
             :features="features"
             :pricing="pricing"
-            :cta="cta"
-            :site="site"
-            :sections="sections"
+            :cta="previewCta"
+            :site="previewSite"
+            :sections="previewSections"
             :testimonials="testimonials"
           />
         </div>
@@ -209,11 +216,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import adminApi from '../../services/adminApi'
 import LandingPreview from '../../components/previews/LandingPreview.vue'
 import { useDialog } from '../../composables/useDialog'
+import {
+  extractObject,
+  extractStats,
+  mergeObject,
+  mergeStats,
+  resolveLocale,
+} from '../../utils/localizedContent'
 
 const { t } = useI18n()
 const dialog = useDialog()
@@ -221,6 +235,15 @@ const dialog = useDialog()
 const loading = ref(true)
 const saving = ref(false)
 const message = ref('')
+const loadError = ref('')
+const editLocale = ref('en')
+
+const rawHero = ref({})
+const rawStats = ref([])
+const rawCta = ref({})
+const rawSite = ref({})
+const rawSections = ref({})
+
 const hero = ref({})
 const stats = ref([])
 const features = ref([])
@@ -229,6 +252,11 @@ const cta = ref({})
 const site = ref({})
 const sections = ref({})
 const testimonials = ref([])
+
+const allFeatures = ref([])
+const allPricing = ref([])
+const allTestimonials = ref([])
+
 const featureModal = ref(false)
 const planModal = ref(false)
 const testimonialModal = ref(false)
@@ -236,67 +264,132 @@ const featureForm = ref({})
 const planForm = ref({})
 const testimonialForm = ref({})
 
+const previewHero = computed(() => extractObject(rawHero.value, editLocale.value))
+const previewStats = computed(() => extractStats(rawStats.value, editLocale.value))
+const previewCta = computed(() => extractObject(rawCta.value, editLocale.value))
+const previewSite = computed(() => extractObject(rawSite.value, editLocale.value))
+const previewSections = computed(() => extractObject(rawSections.value, editLocale.value))
+
+function applyLocaleForms(locale) {
+  hero.value = extractObject(rawHero.value, locale)
+  stats.value = extractStats(rawStats.value, locale)
+  cta.value = extractObject(rawCta.value, locale)
+  site.value = extractObject(rawSite.value, locale)
+  sections.value = extractObject(rawSections.value, locale)
+  features.value = allFeatures.value.filter((f) => (f.locale || 'en') === locale)
+  pricing.value = allPricing.value.filter((p) => (p.locale || 'en') === locale)
+  testimonials.value = allTestimonials.value.filter((item) => (item.locale || 'en') === locale)
+}
+
+function persistLocaleForms(locale) {
+  rawHero.value = mergeObject(rawHero.value, hero.value, locale)
+  rawStats.value = mergeStats(rawStats.value, stats.value, locale)
+  rawCta.value = mergeObject(rawCta.value, cta.value, locale)
+  rawSite.value = mergeObject(rawSite.value, site.value, locale)
+  rawSections.value = mergeObject(rawSections.value, sections.value, locale)
+}
+
+function switchLocale(locale) {
+  if (locale === editLocale.value) return
+  persistLocaleForms(editLocale.value)
+  editLocale.value = locale
+  applyLocaleForms(locale)
+}
+
 async function load() {
+  loadError.value = ''
   const { data } = await adminApi.get('/landing')
-  hero.value = data.hero || {}
-  stats.value = data.stats || []
-  features.value = data.features || []
-  pricing.value = data.pricing || []
-  cta.value = data.cta || {}
-  site.value = data.site || {}
-  sections.value = data.sections || {}
-  testimonials.value = data.testimonials || []
+  rawHero.value = data.hero || {}
+  rawStats.value = data.stats || []
+  rawCta.value = data.cta || {}
+  rawSite.value = data.site || {}
+  rawSections.value = data.sections || {}
+  allFeatures.value = data.features || []
+  allPricing.value = data.pricing || []
+  allTestimonials.value = data.testimonials || []
+  applyLocaleForms(editLocale.value)
 }
 
 async function saveHero() {
   saving.value = true
-  await adminApi.put('/landing/hero', hero.value)
-  message.value = t('admin.heroSaved')
-  saving.value = false
+  try {
+    persistLocaleForms(editLocale.value)
+    await adminApi.put('/landing/hero', rawHero.value)
+    message.value = t('admin.heroSaved')
+  } catch (e) {
+    loadError.value = e.response?.data?.message || t('admin.saveFailed')
+  } finally {
+    saving.value = false
+  }
 }
 
 async function saveStats() {
   saving.value = true
-  await adminApi.put('/landing/stats', { stats: stats.value })
-  message.value = t('admin.statsSaved')
-  saving.value = false
+  try {
+    persistLocaleForms(editLocale.value)
+    await adminApi.put('/landing/stats', { stats: rawStats.value })
+    message.value = t('admin.statsSaved')
+  } catch (e) {
+    loadError.value = e.response?.data?.message || t('admin.saveFailed')
+  } finally {
+    saving.value = false
+  }
 }
 
 async function saveCta() {
   saving.value = true
-  await adminApi.put('/landing/cta', cta.value)
-  message.value = t('admin.ctaSaved')
-  saving.value = false
+  try {
+    persistLocaleForms(editLocale.value)
+    await adminApi.put('/landing/cta', rawCta.value)
+    message.value = t('admin.ctaSaved')
+  } catch (e) {
+    loadError.value = e.response?.data?.message || t('admin.saveFailed')
+  } finally {
+    saving.value = false
+  }
 }
 
 async function saveSite() {
   saving.value = true
-  await adminApi.put('/landing/site', site.value)
-  message.value = t('admin.siteSaved')
-  saving.value = false
+  try {
+    persistLocaleForms(editLocale.value)
+    await adminApi.put('/landing/site', rawSite.value)
+    message.value = t('admin.siteSaved')
+  } catch (e) {
+    loadError.value = e.response?.data?.message || t('admin.saveFailed')
+  } finally {
+    saving.value = false
+  }
 }
 
 async function saveSections() {
   saving.value = true
-  await adminApi.put('/landing/sections', sections.value)
-  message.value = t('admin.headingsSaved')
-  saving.value = false
+  try {
+    persistLocaleForms(editLocale.value)
+    await adminApi.put('/landing/sections', rawSections.value)
+    message.value = t('admin.headingsSaved')
+  } catch (e) {
+    loadError.value = e.response?.data?.message || t('admin.saveFailed')
+  } finally {
+    saving.value = false
+  }
 }
 
-function editTestimonial(t) {
-  if (t) {
-    testimonialForm.value = { ...t }
+function editTestimonial(item) {
+  if (item) {
+    testimonialForm.value = { ...item }
   } else {
-    testimonialForm.value = { name: '', role: '', company: '', content: '' }
+    testimonialForm.value = { name: '', role: '', company: '', content: '', locale: editLocale.value, rating: 5 }
   }
   testimonialModal.value = true
 }
 
 async function saveTestimonial() {
-  if (testimonialForm.value.id) {
-    await adminApi.put(`/testimonials/${testimonialForm.value.id}`, testimonialForm.value)
+  const payload = { ...testimonialForm.value, locale: testimonialForm.value.locale || editLocale.value }
+  if (payload.id) {
+    await adminApi.put(`/testimonials/${payload.id}`, payload)
   } else {
-    await adminApi.post('/testimonials', testimonialForm.value)
+    await adminApi.post('/testimonials', payload)
   }
   testimonialModal.value = false
   message.value = t('admin.testimonialSaved')
@@ -320,7 +413,7 @@ function editFeature(f) {
     const items = Array.isArray(f.items) ? f.items : JSON.parse(f.items || '[]')
     featureForm.value = { ...f, itemsText: items.join('\n') }
   } else {
-    featureForm.value = { title: '', subtitle: '', description: '', itemsText: '', color: '#10b981', icon: 'qr' }
+    featureForm.value = { title: '', subtitle: '', description: '', itemsText: '', color: '#10b981', icon: 'qr', locale: editLocale.value }
   }
   featureModal.value = true
 }
@@ -328,7 +421,9 @@ function editFeature(f) {
 async function saveFeature() {
   const payload = {
     ...featureForm.value,
+    locale: featureForm.value.locale || editLocale.value,
     items: featureForm.value.itemsText.split('\n').filter(Boolean),
+    description: featureForm.value.description || featureForm.value.subtitle || featureForm.value.title || '—',
   }
   delete payload.itemsText
   if (featureForm.value.id) {
@@ -344,7 +439,7 @@ async function saveFeature() {
 async function deleteFeature(f) {
   const ok = await dialog.confirm({
     title: t('admin.deleteFeatureTitle'),
-    message: t('admin.deleteFeatureMessage', { title: f.title }),
+    message: t('admin.deleteFeatureMessage', { title: resolveLocale(f.title, editLocale.value) || f.title }),
     confirmText: t('common.delete'),
     variant: 'danger',
   })
@@ -358,7 +453,7 @@ function editPlan(p) {
     const feats = Array.isArray(p.features) ? p.features : JSON.parse(p.features || '[]')
     planForm.value = { ...p, featuresText: feats.join('\n') }
   } else {
-    planForm.value = { name: '', slug: '', price: 0, featuresText: '', is_popular: false, limits: {}, billing_period: 'month' }
+    planForm.value = { name: '', slug: '', price: 0, featuresText: '', is_popular: false, limits: {}, billing_period: 'month', locale: editLocale.value }
   }
   planModal.value = true
 }
@@ -366,6 +461,7 @@ function editPlan(p) {
 async function savePlan() {
   const payload = {
     ...planForm.value,
+    locale: planForm.value.locale || editLocale.value,
     features: planForm.value.featuresText.split('\n').filter(Boolean),
     limits: planForm.value.limits || {},
   }
@@ -393,7 +489,13 @@ async function deletePlan(p) {
 }
 
 onMounted(async () => {
-  try { await load() } finally { loading.value = false }
+  try {
+    await load()
+  } catch (e) {
+    loadError.value = e.response?.data?.message || t('admin.landingLoadFailed')
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 
@@ -433,4 +535,11 @@ onMounted(async () => {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
+.locale-toggle {
+  display: inline-flex; border: 1px solid #e2e8f0; border-radius: 0.5rem; overflow: hidden;
+}
+.locale-toggle button {
+  padding: 0.375rem 0.75rem; font-size: 0.75rem; font-weight: 700; background: white; color: #64748b; border: none; cursor: pointer;
+}
+.locale-toggle button.active { background: #6b4fa0; color: white; }
 </style>

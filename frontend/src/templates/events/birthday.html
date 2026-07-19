@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(180deg, #fff5f7, #fef3c7); color: #1a1333; }
+  .invite { max-width: 400px; margin: 0 auto; background: #fff; border-radius: 24px; overflow: hidden; box-shadow: 0 12px 36px rgba(232,101,90,.15); }
+  .header { position: relative; padding: 32px 20px; min-height: 130px; color: #fff; {{{headerBgStyle}}} }
+  .header .overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(232,101,90,.2), rgba(124,58,237,.4)); }
+  .header-inner { position: relative; z-index: 1; text-align: center; }
+  .emoji { font-size: 36px; margin-bottom: 8px; }
+  h1 { font-size: 24px; font-weight: 900; }
+  .subtitle { font-size: 14px; margin-top: 6px; opacity: .95; }
+  .meta { padding: 14px 18px; text-align: center; font-size: 12px; color: #6b6578; background: #fffbeb; }
+  .sections { padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .block-title { font-size: 12px; font-weight: 800; color: {{themeColor}}; margin-bottom: 8px; }
+  .btn { display: inline-block; padding: 10px 20px; border-radius: 999px; font-weight: 700; text-decoration: none; font-size: 13px; }
+  .btn--primary { background: linear-gradient(135deg, {{themeColor}}, #f472b6); color: #fff; }
+  .btn--outline { border: 2px dashed {{themeColor}}; color: {{themeColor}}; }
+  .countdown { display: flex; justify-content: center; gap: 12px; }
+  .countdown__num { font-size: 24px; font-weight: 900; color: {{themeColor}}; }
+  .countdown__label { font-size: 9px; text-transform: uppercase; color: #a89bb8; }
+  .schedule-item { padding: 10px; border-radius: 12px; background: #fef3c7; margin-bottom: 8px; font-size: 12px; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .gallery-item { aspect-ratio: 1; border-radius: 12px; background: #fce7f3 center/cover no-repeat; }
+  .registry-link { display: inline-block; padding: 8px 14px; border-radius: 999px; background: #fce7f3; color: {{themeColor}}; text-decoration: none; font-size: 12px; font-weight: 600; margin: 4px; }
+  .guest-msg { padding: 10px; border-radius: 12px; background: #fffbeb; font-size: 12px; margin-bottom: 6px; }
+  .video-embed { width: 100%; aspect-ratio: 16/9; border: none; border-radius: 12px; }
+  .scratch-card { border-radius: 16px; overflow: hidden; cursor: pointer; }
+  .scratch-card__cover { padding: 36px; text-align: center; background: linear-gradient(135deg, #f472b6, {{themeColor}}); color: #fff; font-weight: 800; }
+  .scratch-card__inner { display: none; padding: 24px; text-align: center; }
+  .scratch-card.revealed .scratch-card__cover { display: none; }
+  .scratch-card.revealed .scratch-card__inner { display: block; }
+  .footer { padding: 10px 16px; font-size: 10px; font-family: monospace; color: #a89bb8; word-break: break-all; }
+  {{{embedStyles}}}
+</style>
+</head>
+<body>
+  <div class="invite invite--birthday tpl-{{template}}">
+    <div class="header"><div class="overlay"></div><div class="header-inner"><div class="emoji">🎂</div><h1>{{title}}</h1>{{#if subtitle}}<p class="subtitle">{{subtitle}}</p>{{/if}}</div></div>
+    {{{metaHtml}}}
+    <div class="sections">{{{sectionsHtml}}}</div>
+    <div class="footer">{{inviteUrl}}</div>
+  </div>
+</body>
+</html>

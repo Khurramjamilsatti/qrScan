@@ -9,6 +9,7 @@ use App\Models\DigitalBadge;
 use App\Models\DigitalMenu;
 use App\Models\DigitalPage;
 use App\Models\DigitalTicket;
+use App\Models\Form;
 use App\Models\QrCode;
 use App\Models\ScanToWinCampaign;
 use App\Models\ScanToWinPlay;
@@ -32,6 +33,7 @@ class AdminAnalyticsService
             'digital_badges' => DigitalBadge::count(),
             'digital_tickets' => DigitalTicket::count(),
             'scan_to_win' => ScanToWinCampaign::count(),
+            'forms' => Form::count(),
             'custom_domains' => CustomDomain::count(),
             'total_scans' => QrCode::sum('scan_count'),
             'total_clicks' => ShortLink::sum('click_count'),
@@ -40,7 +42,9 @@ class AdminAnalyticsService
                 + DigitalMenu::sum('view_count')
                 + DigitalBadge::sum('view_count')
                 + DigitalTicket::sum('view_count')
-                + ScanToWinCampaign::sum('view_count'),
+                + ScanToWinCampaign::sum('view_count')
+                + Form::sum('view_count'),
+            'form_submissions' => Form::sum('submission_count'),
             'scan_to_win_plays' => ScanToWinPlay::count(),
             'analytics_events' => AnalyticsEvent::count(),
             'scans_this_month' => (clone $appUsers)->sum('scans_this_month'),
@@ -74,7 +78,7 @@ class AdminAnalyticsService
             ->pluck('count', 'country');
 
         $topUsers = User::where('is_admin', false)
-            ->withCount(['qrCodes', 'shortLinks', 'businessCards', 'digitalPages', 'digitalMenus', 'digitalBadges', 'digitalTickets', 'scanToWinCampaigns'])
+            ->withCount(['qrCodes', 'shortLinks', 'businessCards', 'digitalPages', 'digitalMenus', 'digitalBadges', 'digitalTickets', 'scanToWinCampaigns', 'forms'])
             ->get()
             ->map(fn (User $user) => [
                 'id' => $user->id,
@@ -88,7 +92,8 @@ class AdminAnalyticsService
                     + $user->digital_menus_count
                     + $user->digital_badges_count
                     + $user->digital_tickets_count
-                    + $user->scan_to_win_campaigns_count,
+                    + $user->scan_to_win_campaigns_count
+                    + $user->forms_count,
             ])
             ->sortByDesc('total_assets')
             ->take(8)
@@ -109,7 +114,7 @@ class AdminAnalyticsService
     {
         $user->loadCount([
             'qrCodes', 'shortLinks', 'businessCards', 'digitalPages', 'digitalMenus',
-            'digitalBadges', 'digitalTickets', 'scanToWinCampaigns', 'customDomains',
+            'digitalBadges', 'digitalTickets', 'scanToWinCampaigns', 'forms', 'customDomains',
         ]);
 
         $events = AnalyticsEvent::where('user_id', $user->id)
@@ -126,6 +131,7 @@ class AdminAnalyticsService
             'digital_badges' => $user->digital_badges_count,
             'digital_tickets' => $user->digital_tickets_count,
             'scan_to_win' => $user->scan_to_win_campaigns_count,
+            'forms' => $user->forms_count,
             'custom_domains' => $user->custom_domains_count,
             'total_scans' => $user->qrCodes()->sum('scan_count'),
             'total_clicks' => $user->shortLinks()->sum('click_count'),
@@ -134,7 +140,8 @@ class AdminAnalyticsService
                 + $user->digitalMenus()->sum('view_count')
                 + $user->digitalBadges()->sum('view_count')
                 + $user->digitalTickets()->sum('view_count')
-                + $user->scanToWinCampaigns()->sum('view_count'),
+                + $user->scanToWinCampaigns()->sum('view_count')
+                + $user->forms()->sum('view_count'),
             'scans_this_month' => $user->scans_this_month,
             'analytics_events' => $events->count(),
         ];
@@ -158,6 +165,7 @@ class AdminAnalyticsService
                 'digital_badges' => $user->digitalBadges()->select('id', 'title', 'slug', 'view_count', 'is_active', 'created_at')->latest()->limit(10)->get(),
                 'digital_tickets' => $user->digitalTickets()->select('id', 'title', 'slug', 'view_count', 'is_active', 'created_at')->latest()->limit(10)->get(),
                 'scan_to_win' => $user->scanToWinCampaigns()->select('id', 'name', 'slug', 'view_count', 'is_active', 'created_at')->latest()->limit(10)->get(),
+                'forms' => $user->forms()->select('id', 'title', 'slug', 'view_count', 'submission_count', 'is_active', 'created_at')->latest()->limit(10)->get(),
             ],
         ];
     }

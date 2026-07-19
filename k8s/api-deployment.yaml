@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qrscan-api
+  namespace: qrscan
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qrscan-api
+  template:
+    metadata:
+      labels:
+        app: qrscan-api
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:16-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h postgres -U "$DB_USERNAME" -d qrscan; do
+                echo "waiting for postgres..."
+                sleep 2
+              done
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: DB_USERNAME
+      containers:
+        - name: api
+          image: ghcr.io/khurramjamilsatti/qrscan-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: qrscan-config
+          env:
+            - name: APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: APP_KEY
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: DB_PASSWORD
+            - name: STRIPE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: STRIPE_KEY
+            - name: STRIPE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: STRIPE_SECRET
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: qrscan-secrets
+                  key: STRIPE_WEBHOOK_SECRET
+                  optional: true
+          volumeMounts:
+            - name: storage
+              mountPath: /var/www/html/storage/app
+          readinessProbe:
+            httpGet:
+              path: /up
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /up
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: qrscan-api-storage

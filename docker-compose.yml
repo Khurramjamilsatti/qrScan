@@ -1,4 +1,5 @@
-version: '3.8'
+# Local development — PostgreSQL only.
+# Full production-like stack: docker-compose.prod.yml (see docs/DEPLOYMENT.md)
 
 services:
   postgres:

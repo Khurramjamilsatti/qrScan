@@ -13,88 +13,115 @@
         <h3>{{ editId ? t('shortLinks.editShortLink') : t('shortLinks.createShortLink') }}</h3>
         <button @click="closeEditor" class="btn-ghost text-sm">✕ {{ t('common.close') }}</button>
       </div>
-      <SplitEditor>
+      <SplitEditor :preview-mode="editorTab">
         <template #form>
-          <form @submit.prevent="save" class="form-stack">
-            <div class="form-group">
-              <label>{{ t('common.title') }}</label>
-              <input v-model="form.title" class="input-field" :placeholder="t('shortLinks.titlePlaceholder')" />
-            </div>
-            <div class="form-group">
-              <label>{{ t('common.description') }}</label>
-              <textarea v-model="form.description" class="input-field" rows="2" :placeholder="t('shortLinks.descriptionPlaceholder')"></textarea>
-            </div>
-            <DomainSelect v-model="form.custom_domain_id" />
-            <div class="form-group">
-              <label>{{ t('shortLinks.customSlug') }}</label>
-              <div class="slug-input">
-                <span>{{ linkHost }}/r/</span>
-                <input v-model="form.slug" required pattern="[a-zA-Z0-9_-]+" class="input-field" :placeholder="t('shortLinks.slugPlaceholder')" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>{{ t('qrCodes.destinationUrl') }}</label>
-              <input v-model="form.destination_url" type="url" required class="input-field" :placeholder="t('shortLinks.destinationPlaceholder')" />
-            </div>
-            <div class="utm-section">
-              <div class="utm-title">{{ t('shortLinks.utmParameters') }}</div>
-              <div class="form-row">
-                <input v-model="form.utm_source" class="input-field" placeholder="utm_source" />
-                <input v-model="form.utm_medium" class="input-field" placeholder="utm_medium" />
-              </div>
-              <div class="form-row">
-                <input v-model="form.utm_campaign" class="input-field" placeholder="utm_campaign" />
-                <input v-model="form.utm_term" class="input-field" placeholder="utm_term" />
-              </div>
-              <input v-model="form.utm_content" class="input-field" placeholder="utm_content" />
-            </div>
-            <div class="form-group">
-              <label>{{ t('shortLinks.expirationDate') }}</label>
-              <input v-model="form.expires_at" type="datetime-local" class="input-field" />
+          <form @submit.prevent="save" class="editor-form">
+            <div class="editor-tabs">
+              <button type="button" :class="{ active: editorTab === 'content' }" @click="editorTab = 'content'">{{ t('shortLinks.tabs.content') }}</button>
+              <button type="button" :class="{ active: editorTab === 'appearance' }" @click="editorTab = 'appearance'">{{ t('shortLinks.tabs.appearance') }}</button>
+              <button type="button" :class="{ active: editorTab === 'qr' }" @click="editorTab = 'qr'">{{ t('shortLinks.tabs.qrDesign') }}</button>
+              <button type="button" :class="{ active: editorTab === 'smart' }" @click="editorTab = 'smart'">{{ t('shortLinks.tabs.smart') }}</button>
             </div>
 
-            <div class="qr-section">
-              <div class="section-title">{{ t('qrCodes.qrCodeStyle') }}</div>
-              <div class="form-row">
+            <div class="editor-form__scroll">
+              <div v-show="editorTab === 'content'" class="tab-panel">
                 <div class="form-group">
-                  <label>{{ t('common.foreground') }}</label>
-                  <input v-model="form.foreground_color" type="color" class="color-input" />
+                  <label>{{ t('common.title') }}</label>
+                  <input v-model="form.title" class="input-field" :placeholder="t('shortLinks.titlePlaceholder')" />
                 </div>
                 <div class="form-group">
-                  <label>{{ t('common.background') }}</label>
-                  <input v-model="form.background_color" type="color" class="color-input" />
+                  <label>{{ t('common.description') }}</label>
+                  <textarea v-model="form.description" class="input-field" rows="2" :placeholder="t('shortLinks.descriptionPlaceholder')"></textarea>
+                </div>
+                <DomainSelect v-model="form.custom_domain_id" />
+                <div class="form-group">
+                  <label>{{ t('shortLinks.customSlug') }}</label>
+                  <div class="slug-input">
+                    <span>{{ linkHost }}/r/</span>
+                    <input v-model="form.slug" required pattern="[a-zA-Z0-9_-]+" class="input-field" :placeholder="t('shortLinks.slugPlaceholder')" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>{{ t('qrCodes.destinationUrl') }}</label>
+                  <input v-model="form.destination_url" type="url" required class="input-field" :placeholder="t('shortLinks.destinationPlaceholder')" />
+                </div>
+                <div class="utm-section">
+                  <div class="utm-title">{{ t('shortLinks.utmParameters') }}</div>
+                  <div class="form-row">
+                    <input v-model="form.utm_source" class="input-field" placeholder="utm_source" />
+                    <input v-model="form.utm_medium" class="input-field" placeholder="utm_medium" />
+                  </div>
+                  <div class="form-row">
+                    <input v-model="form.utm_campaign" class="input-field" placeholder="utm_campaign" />
+                    <input v-model="form.utm_term" class="input-field" placeholder="utm_term" />
+                  </div>
+                  <input v-model="form.utm_content" class="input-field" placeholder="utm_content" />
                 </div>
               </div>
-              <ImageAssetField v-model="form.logo_path" :label="t('qrCodes.centerLogo')" folder="logos" ai-context="qr-logo" ai-placeholder="minimal tech logo, flat icon" />
-              <ImageAssetField v-model="form.background_image_path" :label="t('qrCodes.backgroundImage')" folder="backgrounds" ai-context="qr-background" ai-placeholder="abstract gradient pattern, minimal" />
-              <div class="form-group">
-                <label>{{ t('common.sizeValue', { value: form.qr_size }) }}</label>
-                <input v-model.number="form.qr_size" type="range" min="200" max="600" step="20" class="range-input" />
-              </div>
-              <div class="form-row">
+
+              <div v-show="editorTab === 'appearance'" class="tab-panel">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>{{ t('common.foreground') }}</label>
+                    <input v-model="form.foreground_color" type="color" class="color-input" />
+                  </div>
+                  <div class="form-group">
+                    <label>{{ t('common.background') }}</label>
+                    <input v-model="form.background_color" type="color" class="color-input" />
+                  </div>
+                </div>
+                <ImageAssetField v-model="form.logo_path" :label="t('qrCodes.centerLogo')" folder="logos" ai-context="qr-logo" ai-placeholder="minimal tech logo, flat icon" />
+                <ImageAssetField v-model="form.background_image_path" :label="t('qrCodes.backgroundImage')" folder="backgrounds" ai-context="qr-background" ai-placeholder="abstract gradient pattern, minimal" />
                 <div class="form-group">
-                  <label>{{ t('common.errorCorrection') }}</label>
-                  <select v-model="form.error_correction" class="input-field">
-                    <option value="L">{{ t('common.errorCorrectionLow') }}</option>
-                    <option value="M">{{ t('common.errorCorrectionMedium') }}</option>
-                    <option value="Q">{{ t('common.errorCorrectionQuartile') }}</option>
-                    <option value="H">{{ t('common.errorCorrectionHigh') }}</option>
+                  <label>{{ t('common.sizeValue', { value: form.qr_size }) }}</label>
+                  <input v-model.number="form.qr_size" type="range" min="200" max="600" step="20" class="range-input" />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>{{ t('common.errorCorrection') }}</label>
+                    <select v-model="form.error_correction" class="input-field">
+                      <option value="L">{{ t('common.errorCorrectionLow') }}</option>
+                      <option value="M">{{ t('common.errorCorrectionMedium') }}</option>
+                      <option value="Q">{{ t('common.errorCorrectionQuartile') }}</option>
+                      <option value="H">{{ t('common.errorCorrectionHigh') }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>{{ t('common.marginValue', { value: form.margin }) }}</label>
+                    <input v-model.number="form.margin" type="range" min="0" max="8" class="range-input" />
+                  </div>
+                </div>
+              </div>
+
+              <div v-show="editorTab === 'qr'" class="tab-panel">
+                <QrStyleFields
+                  v-model:qr-shape="form.qr_shape"
+                  v-model:dot-style="form.dot_style"
+                  v-model:corner-style="form.corner_style"
+                  v-model:frame-style="form.frame_style"
+                />
+              </div>
+
+              <div v-show="editorTab === 'smart'" class="tab-panel">
+                <div class="form-group">
+                  <label>{{ t('smartQr.funnels.attach') }}</label>
+                  <select v-model="form.funnel_id" class="input-field">
+                    <option :value="null">{{ t('smartQr.funnels.none') }}</option>
+                    <option v-for="f in funnels" :key="f.id" :value="f.id">{{ f.name }}</option>
                   </select>
                 </div>
-                <div class="form-group">
-                  <label>{{ t('common.marginValue', { value: form.margin }) }}</label>
-                  <input v-model.number="form.margin" type="range" min="0" max="8" class="range-input" />
-                </div>
+                <QrRoutingEditor v-model="form.routing_rules" />
+                <QrSecurityPanel
+                  v-model="form.security"
+                  v-model:expires-at-value="form.expires_at"
+                  v-model:max-scans-value="form.max_scans"
+                  :signed-url="editId ? (links.find(l => l.id === editId)?.signed_scan_url || '') : ''"
+                />
               </div>
-              <QrStyleFields
-                v-model:qr-shape="form.qr_shape"
-                v-model:dot-style="form.dot_style"
-                v-model:corner-style="form.corner_style"
-                v-model:frame-style="form.frame_style"
-              />
+
+              <p v-if="error" class="error-text">{{ error }}</p>
             </div>
 
-            <p v-if="error" class="error-text">{{ error }}</p>
             <div class="form-actions">
               <button type="button" @click="closeEditor" class="btn-secondary">{{ t('common.cancel') }}</button>
               <button type="submit" :disabled="saving" class="btn-primary">{{ saving ? t('common.saving') : (editId ? t('common.update') : t('common.create')) }}</button>
@@ -102,38 +129,46 @@
           </form>
         </template>
         <template #preview>
-          <LinkPreview
-            :slug="form.slug"
-            :base-url="linkHost + '/r/'"
-            :title="form.title"
-            :description="form.description"
-            :destination="form.destination_url"
-            :utm_source="form.utm_source"
-            :utm_medium="form.utm_medium"
-            :utm_campaign="form.utm_campaign"
-            :utm_term="form.utm_term"
-            :utm_content="form.utm_content"
-            :expires-at="form.expires_at"
-          />
-          <div class="mt-4 text-center">
+          <template v-if="editorTab === 'qr'">
             <QrPreview
               v-if="form.slug"
+              minimal
               :content="previewScanUrl"
               :name="form.title || t('shortLinks.title')"
               :foreground="form.foreground_color"
               :background="form.background_color"
               :logo-url="form.logo_path"
               :background-image="form.background_image_path"
-              :size="Math.min(form.qr_size, 200)"
+              :size="220"
               :margin="form.margin"
               :error-correction="form.error_correction"
+              :qr-shape="form.qr_shape"
+              :dot-style="form.dot_style"
+              :corner-style="form.corner_style"
+              :frame-style="form.frame_style"
               scan-optimized
             />
-          </div>
+          </template>
+          <template v-else>
+            <LinkPreview
+              :slug="form.slug"
+              :base-url="linkHost + '/r/'"
+              :title="form.title"
+              :description="form.description"
+              :destination="form.destination_url"
+              :utm_source="form.utm_source"
+              :utm_medium="form.utm_medium"
+              :utm_campaign="form.utm_campaign"
+              :utm_term="form.utm_term"
+              :utm_content="form.utm_content"
+              :expires-at="form.expires_at"
+            />
+          </template>
         </template>
       </SplitEditor>
     </div>
 
+    <template v-if="!editing">
     <div v-if="loading" class="text-muted">{{ t('common.loading') }}</div>
     <div v-else-if="!links.length && !editing" class="empty-state">
       <div class="empty-icon">🔗</div>
@@ -195,6 +230,7 @@
         </div>
       </div>
     </div>
+    </template>
 
     <div v-if="analyticsLink" class="drawer-overlay" @click.self="analyticsLink = null">
       <div class="drawer">
@@ -203,6 +239,7 @@
           <button @click="analyticsLink = null" class="btn-ghost">✕</button>
         </div>
         <AnalyticsPanel type="short-links" :id="analyticsLink.id" />
+        <AiInsightsPanel type="short-links" :id="analyticsLink.id" />
       </div>
     </div>
   </div>
@@ -219,6 +256,9 @@ import QrPreview from '../../components/previews/QrPreview.vue'
 import QrThumb from '../../components/ui/QrThumb.vue'
 import CopyButton from '../../components/ui/CopyButton.vue'
 import AnalyticsPanel from '../../components/ui/AnalyticsPanel.vue'
+import QrRoutingEditor from '../../components/smart-qr/QrRoutingEditor.vue'
+import QrSecurityPanel from '../../components/smart-qr/QrSecurityPanel.vue'
+import AiInsightsPanel from '../../components/smart-qr/AiInsightsPanel.vue'
 import DomainSelect from '../../components/ui/DomainSelect.vue'
 import ImageAssetField from '../../components/ui/ImageAssetField.vue'
 import PublishToggle from '../../components/ui/PublishToggle.vue'
@@ -247,6 +287,8 @@ const saving = ref(false)
 const error = ref('')
 const analyticsLink = ref(null)
 const togglingId = ref(null)
+const funnels = ref([])
+const editorTab = ref('content')
 
 const defaultForm = () => ({
   title: '', description: '', slug: '', destination_url: '', custom_domain_id: null,
@@ -256,10 +298,13 @@ const defaultForm = () => ({
   logo_path: '', background_image_path: '',
   qr_size: 400, error_correction: 'M', margin: 4,
   qr_shape: 'square', dot_style: 'square', corner_style: 'sharp', frame_style: 'none',
+  funnel_id: null, routing_rules: [],
+  security: { signed: false, one_time_access: false, password_enabled: false, password: '' },
+  max_scans: 0,
 })
 const form = ref(defaultForm())
 
-function openCreate() { editId.value = null; form.value = defaultForm(); editing.value = true; error.value = '' }
+function openCreate() { editId.value = null; form.value = defaultForm(); editorTab.value = 'content'; editing.value = true; error.value = '' }
 function openEdit(link) {
   editId.value = link.id
   form.value = {
@@ -274,7 +319,17 @@ function openEdit(link) {
     dot_style: link.dot_style || 'square',
     corner_style: link.corner_style || 'sharp',
     frame_style: link.frame_style || 'none',
+    funnel_id: link.funnel_id || null,
+    routing_rules: link.routing_rules || [],
+    security: {
+      signed: !!link.security?.signed,
+      one_time_access: !!link.security?.one_time_access,
+      password_enabled: !!link.security?.password_enabled,
+      password: link.security?.password_hash ? '********' : '',
+    },
+    max_scans: link.max_scans || 0,
   }
+  editorTab.value = 'content'
   editing.value = true
 }
 function closeEditor() { editing.value = false; editId.value = null }
@@ -285,7 +340,11 @@ async function save() {
   saving.value = true; error.value = ''
   try {
     const payload = { ...form.value }
-    if (!payload.expires_at) delete payload.expires_at
+    if (payload.expires_at && !payload.expires_at.includes('T')) {
+      payload.expires_at = new Date(payload.expires_at).toISOString()
+    } else if (!payload.expires_at) {
+      delete payload.expires_at
+    }
     delete payload.is_active
     if (editId.value) await api.put(`/short-links/${editId.value}`, payload)
     else await api.post('/short-links', { ...payload, is_active: true })
@@ -327,8 +386,18 @@ async function deleteLink(link) {
 function showAnalytics(link) { analyticsLink.value = link }
 function formatDate(d) { return new Date(d).toLocaleDateString() }
 
+async function loadFunnels() {
+  try {
+    const { data } = await api.get('/qr-funnels')
+    funnels.value = data
+  } catch {
+    funnels.value = []
+  }
+}
+
 onMounted(async () => {
   domains.fetch()
+  loadFunnels()
   try { await load() } finally { loading.value = false }
 })
 </script>
@@ -452,4 +521,6 @@ onMounted(async () => {
 .drawer { width: 100%; max-width: 420px; background: var(--surface); height: 100%; padding: 1.5rem; overflow-y: auto; border-left: 1px solid var(--border); }
 .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
 .drawer-header h3 { color: var(--text-primary); font-weight: 700; }
+.smart-section { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.875rem; }
+.smart-section__title { font-weight: 700; font-size: 0.9375rem; color: var(--text-primary); padding-bottom: 0.25rem; border-bottom: 1px solid var(--border); }
 </style>

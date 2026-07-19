@@ -13,124 +13,136 @@
         <h3>{{ editId ? t('scanToWin.editCampaign') : t('scanToWin.createCampaign') }}</h3>
         <button @click="closeEditor" class="btn-ghost text-sm">✕ {{ t('common.close') }}</button>
       </div>
-      <SplitEditor>
+      <SplitEditor :preview-mode="editorTab">
         <template #form>
-          <form @submit.prevent="save" class="form-stack">
-            <DomainSelect v-model="form.custom_domain_id" />
-            <div class="form-group">
-              <label>{{ t('scanToWin.campaignUrlSlug') }}</label>
-              <div class="slug-input">
-                <span>{{ campaignHost }}/win/</span>
-                <input v-model="form.slug" required pattern="[a-zA-Z0-9_-]+" class="input-field" placeholder="summer-giveaway" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>{{ t('scanToWin.campaignName') }}</label>
-              <input v-model="form.name" required class="input-field" placeholder="Summer Giveaway 2026" />
-            </div>
-            <div class="form-group">
-              <label>{{ t('common.description') }}</label>
-              <textarea v-model="form.description" class="input-field" rows="2" placeholder="Scan the QR code for a chance to win!"></textarea>
+          <form @submit.prevent="save" class="editor-form">
+            <div class="editor-tabs">
+              <button type="button" :class="{ active: editorTab === 'content' }" @click="editorTab = 'content'">{{ t('scanToWin.tabs.content') }}</button>
+              <button type="button" :class="{ active: editorTab === 'appearance' }" @click="editorTab = 'appearance'">{{ t('scanToWin.tabs.appearance') }}</button>
+              <button type="button" :class="{ active: editorTab === 'qr' }" @click="editorTab = 'qr'">{{ t('scanToWin.tabs.qrDesign') }}</button>
             </div>
 
-            <div class="template-section">
-              <div class="section-title">{{ t('digitalPages.chooseTemplate') }}</div>
-              <div class="template-grid template-grid--3">
-                <button
-                  v-for="tpl in scanTemplates"
-                  :key="tpl.id"
-                  type="button"
-                  class="template-card"
-                  :class="{ active: form.template === tpl.id }"
-                  @click="form.template = tpl.id"
-                >
-                  <span class="template-card__icon">{{ tpl.icon }}</span>
-                  <span class="template-card__label">{{ tpl.label }}</span>
-                  <span class="template-card__desc">{{ tpl.description }}</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ t('scanToWin.startsAt') }}</label>
-                <input v-model="form.starts_at" type="datetime-local" class="input-field" />
-              </div>
-              <div class="form-group">
-                <label>{{ t('scanToWin.endsAt') }}</label>
-                <input v-model="form.ends_at" type="datetime-local" class="input-field" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>{{ t('scanToWin.maxPlaysPerDay') }}</label>
-              <input v-model.number="form.max_plays_per_day" type="number" min="0" class="input-field" />
-            </div>
-            <div class="form-group">
-              <label>{{ t('scanToWin.winMessage') }}</label>
-              <input v-model="form.win_message" class="input-field" :placeholder="t('scanToWin.defaultWinMessage')" />
-            </div>
-            <div class="form-group">
-              <label>{{ t('scanToWin.loseMessage') }}</label>
-              <input v-model="form.lose_message" class="input-field" :placeholder="t('scanToWin.defaultLoseMessage')" />
-            </div>
-            <div class="form-group">
-              <label>{{ t('scanToWin.terms') }}</label>
-              <textarea v-model="form.terms" class="input-field" rows="3" :placeholder="t('scanToWin.termsPlaceholder')"></textarea>
-            </div>
-
-            <div class="content-section">
-              <div class="repeater-head">
-                <span class="section-title">{{ t('scanToWin.prizes') }}</span>
-                <button type="button" @click="addPrize" class="link-btn">+ {{ t('scanToWin.addPrize') }}</button>
-              </div>
-              <div v-for="(prize, i) in form.prizes" :key="i" class="repeater-block">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>{{ t('scanToWin.prizeName') }}</label>
-                    <input v-model="prize.name" class="input-field" placeholder="Free coffee" />
-                  </div>
-                  <div class="form-group">
-                    <label>{{ t('scanToWin.weightOdds') }}</label>
-                    <input v-model.number="prize.weight" type="number" min="1" class="input-field" />
+            <div class="editor-form__scroll">
+              <div v-show="editorTab === 'content'" class="tab-panel">
+                <DomainSelect v-model="form.custom_domain_id" />
+                <div class="form-group">
+                  <label>{{ t('scanToWin.campaignUrlSlug') }}</label>
+                  <div class="slug-input">
+                    <span>{{ campaignHost }}/win/</span>
+                    <input v-model="form.slug" required pattern="[a-zA-Z0-9_-]+" class="input-field" placeholder="summer-giveaway" />
                   </div>
                 </div>
                 <div class="form-group">
-                  <label>{{ t('common.description') }}</label>
-                  <input v-model="prize.description" class="input-field" placeholder="Redeem at counter" />
+                  <label>{{ t('scanToWin.campaignName') }}</label>
+                  <input v-model="form.name" required class="input-field" placeholder="Summer Giveaway 2026" />
                 </div>
-                <ImageAssetField v-model="prize.image_path" :label="t('scanToWin.prizeImage')" folder="prizes" ai-context="prize-gift" ai-placeholder="gift box prize" />
+                <div class="form-group">
+                  <label>{{ t('common.description') }}</label>
+                  <textarea v-model="form.description" class="input-field" rows="2" placeholder="Scan the QR code for a chance to win!"></textarea>
+                </div>
+
+                <div class="template-section">
+                  <div class="section-title">{{ t('digitalPages.chooseTemplate') }}</div>
+                  <div class="template-grid template-grid--3">
+                    <button
+                      v-for="tpl in scanTemplates"
+                      :key="tpl.id"
+                      type="button"
+                      class="template-card"
+                      :class="{ active: form.template === tpl.id }"
+                      @click="form.template = tpl.id"
+                    >
+                      <span class="template-card__icon">{{ tpl.icon }}</span>
+                      <span class="template-card__label">{{ tpl.label }}</span>
+                      <span class="template-card__desc">{{ tpl.description }}</span>
+                    </button>
+                  </div>
+                </div>
+
                 <div class="form-row">
                   <div class="form-group">
-                    <label>{{ t('scanToWin.quantity') }}</label>
-                    <input v-model.number="prize.quantity" type="number" min="0" class="input-field" @change="syncPrizeRemaining(prize)" />
+                    <label>{{ t('scanToWin.startsAt') }}</label>
+                    <input v-model="form.starts_at" type="datetime-local" class="input-field" />
                   </div>
                   <div class="form-group">
-                    <label>{{ t('scanToWin.remaining') }}</label>
-                    <input v-model.number="prize.remaining" type="number" min="0" class="input-field" />
+                    <label>{{ t('scanToWin.endsAt') }}</label>
+                    <input v-model="form.ends_at" type="datetime-local" class="input-field" />
                   </div>
                 </div>
-                <button type="button" @click="form.prizes.splice(i, 1)" class="remove-btn block">{{ t('scanToWin.removePrize') }}</button>
+                <div class="form-group">
+                  <label>{{ t('scanToWin.maxPlaysPerDay') }}</label>
+                  <input v-model.number="form.max_plays_per_day" type="number" min="0" class="input-field" />
+                </div>
+                <div class="form-group">
+                  <label>{{ t('scanToWin.winMessage') }}</label>
+                  <input v-model="form.win_message" class="input-field" :placeholder="t('scanToWin.defaultWinMessage')" />
+                </div>
+                <div class="form-group">
+                  <label>{{ t('scanToWin.loseMessage') }}</label>
+                  <input v-model="form.lose_message" class="input-field" :placeholder="t('scanToWin.defaultLoseMessage')" />
+                </div>
+                <div class="form-group">
+                  <label>{{ t('scanToWin.terms') }}</label>
+                  <textarea v-model="form.terms" class="input-field" rows="3" :placeholder="t('scanToWin.termsPlaceholder')"></textarea>
+                </div>
+
+                <div class="content-section">
+                  <div class="repeater-head">
+                    <span class="section-title">{{ t('scanToWin.prizes') }}</span>
+                    <button type="button" @click="addPrize" class="link-btn">+ {{ t('scanToWin.addPrize') }}</button>
+                  </div>
+                  <div v-for="(prize, i) in form.prizes" :key="i" class="repeater-block">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>{{ t('scanToWin.prizeName') }}</label>
+                        <input v-model="prize.name" class="input-field" placeholder="Free coffee" />
+                      </div>
+                      <div class="form-group">
+                        <label>{{ t('scanToWin.weightOdds') }}</label>
+                        <input v-model.number="prize.weight" type="number" min="1" class="input-field" />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label>{{ t('common.description') }}</label>
+                      <input v-model="prize.description" class="input-field" placeholder="Redeem at counter" />
+                    </div>
+                    <ImageAssetField v-model="prize.image_path" :label="t('scanToWin.prizeImage')" folder="prizes" ai-context="prize-gift" ai-placeholder="gift box prize" />
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>{{ t('scanToWin.quantity') }}</label>
+                        <input v-model.number="prize.quantity" type="number" min="0" class="input-field" @change="syncPrizeRemaining(prize)" />
+                      </div>
+                      <div class="form-group">
+                        <label>{{ t('scanToWin.remaining') }}</label>
+                        <input v-model.number="prize.remaining" type="number" min="0" class="input-field" />
+                      </div>
+                    </div>
+                    <button type="button" @click="form.prizes.splice(i, 1)" class="remove-btn block">{{ t('scanToWin.removePrize') }}</button>
+                  </div>
+                </div>
               </div>
+
+              <div v-show="editorTab === 'appearance'" class="tab-panel">
+                <ImageAssetField v-model="form.logo_path" :label="t('common.logo')" folder="logos" ai-context="campaign-logo" ai-placeholder="promotional brand logo" />
+                <ImageAssetField v-model="form.background_image_path" :label="t('common.background')" folder="backgrounds" ai-context="giveaway-background" ai-placeholder="festive celebration background" />
+                <div class="form-group">
+                  <label>{{ t('common.themeColor') }}</label>
+                  <input v-model="form.theme_color" type="color" class="color-input" />
+                </div>
+              </div>
+
+              <div v-show="editorTab === 'qr'" class="tab-panel">
+                <QrStyleFields
+                  v-model:qr-shape="form.qr_shape"
+                  v-model:dot-style="form.dot_style"
+                  v-model:corner-style="form.corner_style"
+                  v-model:frame-style="form.frame_style"
+                />
+              </div>
+
+              <p v-if="error" class="error-text">{{ error }}</p>
             </div>
 
-            <ImageAssetField v-model="form.logo_path" :label="t('common.logo')" folder="logos" ai-context="campaign-logo" ai-placeholder="promotional brand logo" />
-            <ImageAssetField v-model="form.background_image_path" :label="t('common.background')" folder="backgrounds" ai-context="giveaway-background" ai-placeholder="festive celebration background" />
-            <div class="form-group">
-              <label>{{ t('common.themeColor') }}</label>
-              <input v-model="form.theme_color" type="color" class="color-input" />
-            </div>
-
-            <div class="qr-section">
-              <div class="section-title">{{ t('scanToWin.campaignQrStyle') }}</div>
-              <QrStyleFields
-                v-model:qr-shape="form.qr_shape"
-                v-model:dot-style="form.dot_style"
-                v-model:corner-style="form.corner_style"
-                v-model:frame-style="form.frame_style"
-              />
-            </div>
-
-            <p v-if="error" class="error-text">{{ error }}</p>
             <div class="form-actions">
               <button type="button" @click="closeEditor" class="btn-secondary">{{ t('common.cancel') }}</button>
               <button type="submit" :disabled="saving" class="btn-primary">{{ saving ? t('common.saving') : (editId ? t('common.update') : t('common.create')) }}</button>
@@ -138,7 +150,22 @@
           </form>
         </template>
         <template #preview>
+          <QrPreview
+            v-if="editorTab === 'qr' && form.slug"
+            minimal
+            :content="previewCampaignUrl"
+            :name="form.name"
+            :foreground="form.theme_color"
+            :logo-url="form.logo_path"
+            :background-image="form.background_image_path"
+            :size="220"
+            :qr-shape="form.qr_shape"
+            :dot-style="form.dot_style"
+            :corner-style="form.corner_style"
+            :frame-style="form.frame_style"
+          />
           <ScanToWinPreview
+            v-else
             :name="form.name"
             :description="form.description"
             :template="form.template"
@@ -152,21 +179,6 @@
             :background-image="form.background_image_path"
             :campaign-url="previewCampaignUrl"
           />
-          <div class="mt-4 text-center">
-            <QrPreview
-              v-if="form.slug"
-              :content="previewCampaignUrl"
-              :name="form.name"
-              :foreground="form.theme_color"
-              :logo-url="form.logo_path"
-              :background-image="form.background_image_path"
-              :size="140"
-              :qr-shape="form.qr_shape"
-              :dot-style="form.dot_style"
-              :corner-style="form.corner_style"
-              :frame-style="form.frame_style"
-            />
-          </div>
         </template>
       </SplitEditor>
     </div>
@@ -181,9 +193,12 @@
       </div>
       <div v-else class="campaigns-grid">
         <div v-for="campaign in campaigns" :key="campaign.id" class="campaign-item" :class="{ draft: !campaign.is_active }">
-          <div v-if="!campaign.is_active" class="draft-ribbon">{{ t('publish.draft') }}</div>
-          <ScanToWinPreview
-            :name="campaign.name"
+          <div class="campaign-item__stack">
+            <div v-if="!campaign.is_active" class="draft-ribbon">{{ t('publish.draft') }}</div>
+            <div class="item-preview-scroll">
+              <ScanToWinPreview
+                compact
+                :name="campaign.name"
             :description="campaign.description"
             :template="campaign.template"
             :starts-at="campaign.starts_at"
@@ -194,8 +209,9 @@
             :theme-color="campaign.theme_color"
             :logo="campaign.logo_path"
             :background-image="campaign.background_image_path"
-            :campaign-url="campaign.campaign_url"
-          />
+              />
+            </div>
+          </div>
           <div class="campaign-item__footer">
             <PublishToggle
               :model-value="!!campaign.is_active"
@@ -269,6 +285,7 @@ const error = ref('')
 const loadError = ref('')
 const analyticsCampaign = ref(null)
 const togglingId = ref(null)
+const editorTab = ref('content')
 
 const campaignHost = computed(() => {
   try { return new URL(domains.baseUrlFor(form.value?.custom_domain_id)).host } catch { return 'localhost' }
@@ -307,6 +324,7 @@ function syncPrizeRemaining(prize) {
 function openCreate() {
   editId.value = null
   form.value = defaultScanToWinForm()
+  editorTab.value = 'content'
   editing.value = true
   error.value = ''
 }
@@ -324,6 +342,7 @@ function openEdit(campaign) {
     starts_at: toDatetimeLocal(campaign.starts_at),
     ends_at: toDatetimeLocal(campaign.ends_at),
   }
+  editorTab.value = 'content'
   editing.value = true
   error.value = ''
 }
@@ -441,8 +460,30 @@ onMounted(async () => {
 .remove-btn.block { font-size: 0.75rem; text-align: left; padding: 0; }
 .form-actions { display: flex; gap: 0.75rem; padding-top: 0.5rem; }
 .error-text { color: #ef4444; font-size: 0.875rem; }
-.campaigns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
-.campaign-item { position: relative; display: flex; flex-direction: column; gap: 0.75rem; }
+.campaigns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; align-items: stretch; }
+.campaign-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.campaign-item__stack {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.item-preview-scroll {
+  flex: 1 1 auto;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--bg-subtle);
+}
 .campaign-item.draft { opacity: 0.88; }
 .draft-ribbon {
   position: absolute; top: 0.5rem; left: 0.5rem; z-index: 5;
@@ -450,7 +491,16 @@ onMounted(async () => {
   padding: 0.15rem 0.4rem; border-radius: 0.25rem;
   background: var(--gold-muted); color: #92680a;
 }
-.campaign-item__footer { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.campaign-item__footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
 .view-stat {
   display: inline-flex; align-items: baseline; gap: 0.2rem;
   padding: 0.15rem 0.5rem; border-radius: 9999px;

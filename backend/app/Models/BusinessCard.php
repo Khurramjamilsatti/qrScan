@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class BusinessCard extends Model
 {
     protected $fillable = [
-        'user_id', 'custom_domain_id', 'slug', 'full_name', 'job_title', 'company',
+        'user_id', 'custom_domain_id', 'slug', 'template', 'full_name', 'job_title', 'company',
         'bio', 'address', 'tagline', 'email', 'phone', 'website',
         'photo_path', 'background_image_path', 'logo_path', 'social_links',
         'theme_color', 'qr_shape', 'dot_style', 'corner_style', 'frame_style', 'is_active',

@@ -2,13 +2,11 @@
   <div class="public-page public-page-light" :style="pageStyle">
     <div class="page-bg" aria-hidden="true"></div>
 
-    <!-- Top bar -->
     <header class="page-header">
       <PublicBrandHeader />
       <ThemeToggle />
     </header>
 
-    <!-- Loading -->
     <div v-if="loading" class="page-center">
       <div class="loader-card">
         <div class="skeleton skeleton-header"></div>
@@ -18,7 +16,6 @@
       </div>
     </div>
 
-    <!-- Unpublished -->
     <div v-else-if="errorType === 'unpublished'" class="page-center">
       <div class="state-card">
         <div class="state-icon unpublished">🔒</div>
@@ -28,7 +25,6 @@
       </div>
     </div>
 
-    <!-- Not found -->
     <div v-else-if="errorType === 'notfound'" class="page-center">
       <div class="state-card">
         <div class="state-icon">🔍</div>
@@ -38,26 +34,40 @@
       </div>
     </div>
 
-    <!-- Published card -->
     <main v-else class="page-center">
       <div class="published-badge">
         <span class="badge-dot"></span>
         {{ t('public.publicProfile') }}
       </div>
-      <article class="profile-card">
-        <!-- Header -->
-        <div class="profile-header" :class="{ 'has-bg': bgUrl }" :style="headerStyle">
+      <article class="profile-card" :class="`profile-card--${cardLayout}`">
+        <div
+          v-if="cardLayout !== 'minimal'"
+          class="profile-header"
+          :class="{ 'has-bg': bgUrl }"
+          :style="headerStyle"
+        >
           <div class="header-overlay"></div>
           <img v-if="logoUrl" :src="logoUrl" alt="" class="profile-logo" />
         </div>
 
-        <div class="profile-body">
+        <div class="profile-body" :class="{ 'profile-body--minimal': cardLayout === 'minimal' }">
           <div class="avatar-wrap">
-            <div class="avatar-ring" :style="{ '--ring': themeColor }">
+            <div
+              class="avatar-ring"
+              :class="{ 'avatar-ring--round': cardLayout === 'modern' || cardLayout === 'minimal' }"
+              :style="{ '--ring': themeColor }"
+            >
               <img v-if="photoUrl" :src="photoUrl" alt="" class="avatar-img" />
               <span v-else class="avatar-letter">{{ initial }}</span>
             </div>
           </div>
+
+          <img
+            v-if="cardLayout === 'minimal' && logoUrl"
+            :src="logoUrl"
+            alt=""
+            class="profile-logo-minimal"
+          />
 
           <h1 class="profile-name">{{ card.full_name }}</h1>
           <p v-if="card.tagline" class="profile-tagline">{{ card.tagline }}</p>
@@ -69,85 +79,51 @@
 
           <p v-if="card.bio" class="profile-bio">{{ card.bio }}</p>
 
-          <!-- Quick actions -->
-          <div class="quick-actions">
-            <a v-if="card.email" :href="`mailto:${card.email}`" class="quick-btn">
-              <span class="quick-icon">✉</span>
-              <span>{{ t('public.emailAction') }}</span>
-            </a>
-            <a v-if="card.phone" :href="`tel:${card.phone}`" class="quick-btn">
-              <span class="quick-icon">📞</span>
-              <span>{{ t('public.callAction') }}</span>
-            </a>
-            <a v-if="card.website" :href="card.website" target="_blank" rel="noopener" class="quick-btn">
-              <span class="quick-icon">🌐</span>
-              <span>{{ t('public.websiteAction') }}</span>
-            </a>
-            <button type="button" class="quick-btn primary" @click="saveVcard">
-              <span class="quick-icon">👤</span>
-              <span>{{ t('public.saveContact') }}</span>
-            </button>
+          <div v-if="hasContactInfo" class="contact-list">
+            <a v-if="card.email" :href="`mailto:${card.email}`" class="contact-item">✉ {{ card.email }}</a>
+            <a v-if="card.phone" :href="`tel:${card.phone}`" class="contact-item">📞 {{ card.phone }}</a>
+            <a v-if="card.website" :href="card.website" target="_blank" rel="noopener" class="contact-item">🌐 {{ cleanUrl(card.website) }}</a>
+            <div v-if="card.address" class="contact-item">📍 {{ card.address }}</div>
           </div>
 
-          <!-- Contact details -->
-          <div v-if="hasContactDetails" class="contact-grid">
-            <a v-if="card.email" :href="`mailto:${card.email}`" class="contact-card">
-              <span class="contact-label">{{ t('common.email') }}</span>
-              <span class="contact-value">{{ card.email }}</span>
+          <div v-if="card.social_links?.length" class="social-row">
+            <a
+              v-for="(s, i) in card.social_links"
+              :key="i"
+              :href="s.url"
+              target="_blank"
+              rel="noopener"
+              class="social-pill"
+            >
+              {{ s.platform || t('templates.sections.fallbackLink') }}
             </a>
-            <a v-if="card.phone" :href="`tel:${card.phone}`" class="contact-card">
-              <span class="contact-label">{{ t('common.phone') }}</span>
-              <span class="contact-value">{{ card.phone }}</span>
-            </a>
-            <a v-if="card.website" :href="card.website" target="_blank" rel="noopener" class="contact-card">
-              <span class="contact-label">{{ t('common.website') }}</span>
-              <span class="contact-value">{{ cleanUrl(card.website) }}</span>
-            </a>
-            <div v-if="card.address" class="contact-card static">
-              <span class="contact-label">{{ t('common.address') }}</span>
-              <span class="contact-value">{{ card.address }}</span>
-            </div>
           </div>
+        </div>
 
-          <!-- Social -->
-          <div v-if="card.social_links?.length" class="social-section">
-            <p class="section-label">{{ t('templates.sections.connectTitle') }}</p>
-            <div class="social-row">
-              <a
-                v-for="(s, i) in card.social_links"
-                :key="i"
-                :href="s.url"
-                target="_blank"
-                rel="noopener"
-                class="social-btn"
-              >
-                {{ s.platform || t('templates.sections.fallbackLink') }}
-              </a>
-            </div>
+        <div class="page-qr">
+          <p class="page-qr__label">{{ t('public.scanToSave') }}</p>
+          <div class="page-qr__code">
+            <QrPreview
+              :content="shareUrl"
+              :foreground="themeColor"
+              :background="'#ffffff'"
+              :logo-url="card.logo_path"
+              :background-image="card.background_image_path"
+              :size="160"
+              minimal
+              :qr-shape="card.qr_shape || 'square'"
+              :dot-style="card.dot_style || 'square'"
+              :corner-style="card.corner_style || 'sharp'"
+              :frame-style="card.frame_style || 'none'"
+            />
           </div>
-
-          <!-- QR -->
-          <div class="qr-block">
-            <p class="section-label">{{ t('public.scanToSave') }}</p>
-            <div class="qr-wrap">
-              <QrPreview
-                :content="shareUrl"
-                :foreground="themeColor"
-                :background="'#ffffff'"
-                :logo-url="card.logo_path"
-                :background-image="card.background_image_path"
-                :size="148"
-                :qr-shape="card.qr_shape || 'square'"
-                :dot-style="card.dot_style || 'square'"
-                :corner-style="card.corner_style || 'sharp'"
-                :frame-style="card.frame_style || 'none'"
-              />
-            </div>
-            <button type="button" class="share-btn" @click="shareCard">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-              {{ t('public.shareCard') }}
-            </button>
-          </div>
+          <button type="button" class="save-contact-btn" @click="saveVcard">
+            {{ t('public.saveContact') }}
+          </button>
+          <button type="button" class="share-btn" @click="shareCard">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            {{ t('public.shareCard') }}
+          </button>
         </div>
       </article>
 
@@ -169,15 +145,17 @@ import ThemeToggle from '../components/ui/ThemeToggle.vue'
 import PublicBrandHeader from '../components/ui/PublicBrandHeader.vue'
 import { downloadVcard } from '../utils/vcard'
 import { resolveStorageUrl } from '../utils/storageUrl'
+import { getCardTemplateLayout } from '../utils/digitalModules'
 
 const { t } = useI18n()
 
 const route = useRoute()
 const card = ref(null)
 const loading = ref(true)
-const errorType = ref(null) // 'notfound' | 'unpublished'
+const errorType = ref(null)
 
 const themeColor = computed(() => card.value?.theme_color || '#e8655a')
+const cardLayout = computed(() => getCardTemplateLayout(card.value?.template))
 const photoUrl = computed(() => resolveStorageUrl(card.value?.photo_path))
 const logoUrl = computed(() => resolveStorageUrl(card.value?.logo_path))
 const bgUrl = computed(() => resolveStorageUrl(card.value?.background_image_path))
@@ -185,16 +163,15 @@ const initial = computed(() => card.value?.full_name?.charAt(0)?.toUpperCase() |
 const shareUrl = computed(() => `${window.location.origin}/card/${route.params.slug}`)
 
 const pageStyle = computed(() => ({ '--card-theme': themeColor.value }))
+const hasContactInfo = computed(() =>
+  card.value?.email || card.value?.phone || card.value?.website || card.value?.address
+)
 const headerStyle = computed(() => {
   if (bgUrl.value) {
     return { backgroundImage: `url(${bgUrl.value})`, backgroundSize: 'cover', backgroundPosition: 'center' }
   }
   return { background: `linear-gradient(135deg, ${themeColor.value}, color-mix(in srgb, ${themeColor.value} 55%, #1a1333))` }
 })
-
-const hasContactDetails = computed(() =>
-  card.value?.email || card.value?.phone || card.value?.website || card.value?.address
-)
 
 function cleanUrl(url) {
   return url?.replace(/^https?:\/\//, '') || ''
@@ -268,27 +245,6 @@ watch(() => route.params.slug, loadCard)
   max-width: 32rem;
   margin: 0 auto;
 }
-.brand-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  font-size: 1.0625rem;
-  color: var(--text-primary);
-  text-decoration: none;
-}
-.brand-icon {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.625rem;
-  background: var(--brand);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-}
-.brand-accent { color: var(--gold); }
 
 .page-center {
   position: relative;
@@ -301,14 +257,13 @@ watch(() => route.params.slug, loadCard)
   margin: 0 auto;
 }
 
-/* Profile card */
 .profile-card {
   width: 100%;
   background: var(--surface);
   border-radius: 1.5rem;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
-  overflow: visible;
+  overflow: hidden;
   position: relative;
 }
 .published-badge {
@@ -367,9 +322,20 @@ watch(() => route.params.slug, loadCard)
 .profile-body {
   position: relative;
   z-index: 5;
-  padding: 0 1.5rem 1.75rem;
+  padding: 0 1.5rem 1.5rem;
   margin-top: -3.25rem;
   text-align: center;
+}
+.profile-body--minimal {
+  margin-top: 0;
+  padding-top: 1.75rem;
+}
+.profile-logo-minimal {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  margin: 0.75rem auto 0;
+  display: block;
 }
 .avatar-wrap {
   position: relative;
@@ -404,6 +370,63 @@ watch(() => route.params.slug, loadCard)
   font-weight: 800;
   color: var(--ring);
 }
+.avatar-ring--round { border-radius: 50%; }
+.avatar-ring--round .avatar-img,
+.avatar-ring--round .avatar-letter { border-radius: 50%; }
+
+.profile-card--modern .profile-header { height: 6rem; }
+.profile-card--modern .profile-body { margin-top: -3.5rem; }
+.profile-card--modern .avatar-ring { width: 7rem; height: 7rem; }
+
+.profile-card--bold .profile-header { height: 9rem; align-items: center; padding: 1rem 1.25rem; }
+.profile-card--bold .profile-body { margin-top: -3.75rem; }
+.profile-card--bold .profile-name { font-size: 2rem; }
+.profile-card--bold .avatar-ring { width: 7.5rem; height: 7.5rem; }
+
+.profile-card--minimal .profile-name { font-size: 1.5rem; }
+.profile-card--minimal .profile-bio { text-align: center; }
+.profile-card--modern .contact-list,
+.profile-card--minimal .contact-list { align-items: center; }
+.profile-card--modern .social-row,
+.profile-card--minimal .social-row { justify-content: center; }
+
+.contact-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  text-align: left;
+}
+.contact-item {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  word-break: break-word;
+  transition: color 0.2s;
+}
+a.contact-item:hover { color: var(--card-theme); }
+
+.social-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.875rem;
+}
+.social-pill {
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.625rem;
+  background: color-mix(in srgb, var(--card-theme) 12%, var(--surface));
+  color: var(--card-theme);
+  border-radius: 9999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.social-pill:hover {
+  background: var(--card-theme);
+  color: white;
+}
+
 .profile-name {
   font-family: var(--font-display);
   font-size: 1.75rem;
@@ -431,131 +454,51 @@ watch(() => route.params.slug, loadCard)
   text-align: left;
 }
 
-/* Quick actions */
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-  margin-top: 1.25rem;
-}
-.quick-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.75rem 0.5rem;
-  border-radius: 0.875rem;
-  border: 1px solid var(--border);
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.quick-btn:hover {
-  border-color: var(--card-theme);
-  background: color-mix(in srgb, var(--card-theme) 8%, var(--surface));
-  color: var(--card-theme);
-}
-.quick-btn.primary {
-  grid-column: span 2;
-  flex-direction: row;
-  justify-content: center;
-  gap: 0.5rem;
-  background: var(--card-theme);
-  border-color: var(--card-theme);
-  color: white;
-  padding: 0.875rem;
-  font-size: 0.875rem;
-}
-.quick-btn.primary:hover {
-  filter: brightness(1.05);
-  color: white;
-}
-.quick-icon { font-size: 1.125rem; }
-
-/* Contact grid */
-.contact-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
-  text-align: left;
-}
-.contact-card {
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  text-decoration: none;
-  transition: border-color 0.2s;
-}
-.contact-card:not(.static):hover { border-color: var(--card-theme); }
-.contact-label {
-  display: block;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-bottom: 0.2rem;
-}
-.contact-value {
-  font-size: 0.8125rem;
-  color: var(--text-primary);
-  word-break: break-word;
-}
-
-.section-label {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin: 0 0 0.625rem;
+.page-qr {
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 1px solid var(--border);
   text-align: center;
 }
-.social-section { margin-top: 1.25rem; }
-.social-row {
+.page-qr__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+.page-qr__code {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
   justify-content: center;
 }
-.social-btn {
-  padding: 0.4rem 0.875rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-decoration: none;
-  background: color-mix(in srgb, var(--card-theme) 12%, var(--surface));
-  color: var(--card-theme);
-  border: 1px solid color-mix(in srgb, var(--card-theme) 25%, var(--border));
-  transition: all 0.2s;
+.page-qr__code :deep(.qr-preview-card--minimal) {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
-.social-btn:hover {
+.page-qr__code :deep(.qr-frame) {
+  min-height: auto;
+  padding: 0;
+  background: transparent !important;
+}
+.save-contact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: none;
   background: var(--card-theme);
   color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s;
 }
-
-/* QR */
-.qr-block {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border);
-}
-.qr-wrap :deep(.qr-preview-card) {
-  padding: 1rem;
-  box-shadow: none;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: var(--bg-subtle);
-}
-.qr-wrap :deep(.qr-meta),
-.qr-wrap :deep(.qr-dest),
-.qr-wrap :deep(.qr-badges) { display: none; }
+.save-contact-btn:hover { filter: brightness(1.05); }
 .share-btn {
   display: flex;
   align-items: center;
@@ -591,7 +534,6 @@ watch(() => route.params.slug, loadCard)
   text-decoration: none;
 }
 
-/* States */
 .state-card {
   text-align: center;
   padding: 2.5rem 1.5rem;
@@ -619,7 +561,6 @@ watch(() => route.params.slug, loadCard)
   line-height: 1.6;
 }
 
-/* Loader */
 .loader-card {
   width: 100%;
   padding: 1.5rem;

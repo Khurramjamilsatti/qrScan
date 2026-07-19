@@ -40,4 +40,9 @@ return [
         'model' => env('HUGGINGFACE_MODEL', 'stabilityai/stable-diffusion-xl-base-1.0'),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+    ],
+
 ];

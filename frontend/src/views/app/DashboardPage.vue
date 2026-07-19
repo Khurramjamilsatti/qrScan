@@ -95,9 +95,11 @@ const statCards = computed(() => {
     { icon: '👤', label: t('dashboard.statCards'), value: stats.business_cards || 0, color: '#6b4fa0', pct: pct(stats.business_cards, limits.business_cards) },
     { icon: '📄', label: t('dashboard.statPages'), value: stats.digital_pages || 0, color: '#e8b84a', pct: pct(stats.digital_pages, limits.digital_pages) },
     { icon: '🍽', label: t('dashboard.statMenus'), value: stats.digital_menus || 0, color: '#e8655a', pct: pct(stats.digital_menus, limits.digital_menus) },
+    { icon: '🎊', label: t('dashboard.statEvents'), value: stats.digital_events || 0, color: '#c9a227', pct: pct(stats.digital_events, limits.digital_events) },
     { icon: '🏅', label: t('dashboard.statBadges'), value: stats.digital_badges || 0, color: '#6b4fa0', pct: pct(stats.digital_badges, limits.digital_badges) },
     { icon: '🎫', label: t('dashboard.statTickets'), value: stats.digital_tickets || 0, color: '#e8b84a', pct: pct(stats.digital_tickets, limits.digital_tickets) },
     { icon: '🎁', label: t('dashboard.statScanToWin'), value: stats.scan_to_win || 0, color: '#e8655a', pct: pct(stats.scan_to_win, limits.scan_to_win) },
+    { icon: '📝', label: t('dashboard.statForms'), value: stats.forms || 0, color: '#673ab7', pct: pct(stats.forms, limits.forms) },
     { icon: '📈', label: t('dashboard.statTotalScans'), value: stats.total_scans || 0, color: '#e8655a', pct: 50 },
   ]
 })
@@ -124,9 +126,11 @@ const quickActions = computed(() => [
   { to: '/app/business-cards', icon: '👤', title: t('dashboard.quickBusinessCard'), desc: t('dashboard.quickBusinessCardDesc') },
   { to: '/app/digital-pages', icon: '📄', title: t('dashboard.quickDigitalPage'), desc: t('dashboard.quickDigitalPageDesc') },
   { to: '/app/digital-menus', icon: '🍽', title: t('dashboard.quickDigitalMenu'), desc: t('dashboard.quickDigitalMenuDesc') },
+  { to: '/app/digital-events', icon: '🎊', title: t('dashboard.quickDigitalEvent'), desc: t('dashboard.quickDigitalEventDesc') },
   { to: '/app/digital-badges', icon: '🏅', title: t('dashboard.quickDigitalBadge'), desc: t('dashboard.quickDigitalBadgeDesc') },
   { to: '/app/digital-tickets', icon: '🎫', title: t('dashboard.quickDigitalTicket'), desc: t('dashboard.quickDigitalTicketDesc') },
   { to: '/app/scan-to-win', icon: '🎁', title: t('dashboard.quickScanToWin'), desc: t('dashboard.quickScanToWinDesc') },
+  { to: '/app/forms', icon: '📝', title: t('dashboard.quickForm'), desc: t('dashboard.quickFormDesc') },
 ])
 
 function eventTypeIcon(type) {

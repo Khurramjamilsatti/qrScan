@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { isPublicAppPath } from '../utils/publicRoutes'
 
 const routes = [
   {
@@ -23,14 +24,34 @@ const routes = [
     component: () => import('../views/PublicMenuPage.vue'),
   },
   {
+    path: '/invite/:slug',
+    name: 'public-invite',
+    component: () => import('../views/PublicInvitePage.vue'),
+  },
+  {
     path: '/badge/:slug',
     name: 'public-badge',
     component: () => import('../views/PublicDigitalBadgePage.vue'),
   },
   {
+    path: '/certificate/:slug',
+    name: 'public-certificate',
+    component: () => import('../views/PublicDigitalCertificatePage.vue'),
+  },
+  {
+    path: '/verify/:certificateId',
+    name: 'public-verify',
+    component: () => import('../views/PublicVerifyPage.vue'),
+  },
+  {
     path: '/ticket/:slug',
     name: 'public-ticket',
     component: () => import('../views/PublicDigitalTicketPage.vue'),
+  },
+  {
+    path: '/form/:slug',
+    name: 'public-form',
+    component: () => import('../views/PublicFormPage.vue'),
   },
   {
     path: '/win/:slug',
@@ -91,13 +112,17 @@ const routes = [
     children: [
       { path: '', name: 'dashboard', component: () => import('../views/app/DashboardPage.vue') },
       { path: 'qr-codes', name: 'qr-codes', component: () => import('../views/app/QrCodesPage.vue') },
+      { path: 'smart-qr', name: 'smart-qr', component: () => import('../views/app/SmartQrPage.vue') },
       { path: 'short-links', name: 'short-links', component: () => import('../views/app/ShortLinksPage.vue') },
       { path: 'business-cards', name: 'business-cards', component: () => import('../views/app/BusinessCardsPage.vue') },
       { path: 'digital-pages', name: 'digital-pages', component: () => import('../views/app/DigitalPagesPage.vue') },
       { path: 'digital-menus', name: 'digital-menus', component: () => import('../views/app/DigitalMenusPage.vue') },
+      { path: 'digital-events', name: 'digital-events', component: () => import('../views/app/DigitalEventsPage.vue') },
       { path: 'digital-badges', name: 'digital-badges', component: () => import('../views/app/DigitalBadgesPage.vue') },
+      { path: 'digital-certificates', name: 'digital-certificates', component: () => import('../views/app/DigitalCertificatesPage.vue') },
       { path: 'digital-tickets', name: 'digital-tickets', component: () => import('../views/app/DigitalTicketsPage.vue') },
       { path: 'scan-to-win', name: 'scan-to-win', component: () => import('../views/app/ScanToWinPage.vue') },
+      { path: 'forms', name: 'forms', component: () => import('../views/app/FormsPage.vue') },
       { path: 'domains', name: 'domains', component: () => import('../views/app/CustomDomainsPage.vue') },
       { path: 'billing', name: 'billing', component: () => import('../views/app/BillingPage.vue') },
       { path: 'settings', name: 'settings', component: () => import('../views/app/ProfileSettingsPage.vue') },
@@ -113,6 +138,7 @@ const routes = [
       { path: 'site-pages', name: 'admin-site-pages', component: () => import('../views/admin/SitePagesEditor.vue') },
       { path: 'users', name: 'admin-users', component: () => import('../views/admin/UsersPage.vue') },
       { path: 'users/:id', name: 'admin-user-detail', component: () => import('../views/admin/UserDetailPage.vue') },
+      { path: 'forms', name: 'admin-forms', component: () => import('../views/admin/AdminFormsPage.vue') },
     ],
   },
 ]
@@ -143,7 +169,7 @@ router.beforeEach(async (to) => {
     return
   }
 
-  if (!auth.user && localStorage.getItem('token')) {
+  if (!auth.user && localStorage.getItem('token') && !isPublicAppPath(to.path)) {
     await auth.fetchUser()
   }
   if (to.meta.appOnly && !auth.isAuthenticated) {

@@ -111,6 +111,20 @@ class DomainUrlService
         return $base.'/badge/'.$slug;
     }
 
+    public function certificateUrl(User $user, string $slug, ?int $customDomainId = null): string
+    {
+        $base = $this->resolveBaseUrl($user, $customDomainId);
+
+        return $base.'/certificate/'.$slug;
+    }
+
+    public function verifyUrl(User $user, string $certificateId, ?int $customDomainId = null): string
+    {
+        $base = $this->resolveBaseUrl($user, $customDomainId);
+
+        return $base.'/verify/'.$certificateId;
+    }
+
     public function ticketUrl(User $user, string $slug, ?int $customDomainId = null): string
     {
         $base = $this->resolveBaseUrl($user, $customDomainId);
@@ -123,6 +137,20 @@ class DomainUrlService
         $base = $this->resolveBaseUrl($user, $customDomainId);
 
         return $base.'/win/'.$slug;
+    }
+
+    public function formUrl(User $user, string $slug, ?int $customDomainId = null): string
+    {
+        $base = $this->resolveBaseUrl($user, $customDomainId);
+
+        return $base.'/form/'.$slug;
+    }
+
+    public function inviteUrl(User $user, string $slug, ?int $customDomainId = null): string
+    {
+        $base = $this->resolveBaseUrl($user, $customDomainId);
+
+        return $base.'/invite/'.$slug;
     }
 
     public function dnsInstructions(CustomDomain $domain): array

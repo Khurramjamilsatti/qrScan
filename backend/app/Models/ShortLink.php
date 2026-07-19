@@ -10,6 +10,7 @@ class ShortLink extends Model
 {
     protected $fillable = [
         'user_id', 'custom_domain_id', 'title', 'description', 'slug', 'destination_url',
+        'funnel_id', 'routing_rules', 'security', 'max_scans', 'signing_secret',
         'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
         'expires_at', 'is_active',
         'foreground_color', 'background_color', 'logo_path', 'background_image_path',
@@ -19,7 +20,16 @@ class ShortLink extends Model
 
     protected function casts(): array
     {
-        return ['expires_at' => 'datetime'];
+        return [
+            'expires_at' => 'datetime',
+            'routing_rules' => 'array',
+            'security' => 'array',
+        ];
+    }
+
+    public function funnel(): BelongsTo
+    {
+        return $this->belongsTo(QrFunnel::class, 'funnel_id');
     }
 
     public function user(): BelongsTo

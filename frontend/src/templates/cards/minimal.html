@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #fff; color: #1a1333; }
+  .card { max-width: 360px; margin: 0 auto; padding: 28px 24px; text-align: center; }
+  .avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid color-mix(in srgb, {{themeColor}} 30%, #e8e4f0); margin: 0 auto; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700; color: {{themeColor}}; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .logo { width: 28px; height: 28px; object-fit: contain; margin: 12px auto 0; }
+  h1 { font-size: 22px; font-weight: 700; margin-top: 14px; }
+  .tagline { font-size: 13px; color: {{themeColor}}; margin-top: 4px; font-weight: 600; }
+  .role { font-size: 14px; color: #5c5470; margin-top: 4px; }
+  .bio { font-size: 13px; color: #5c5470; line-height: 1.6; margin-top: 14px; }
+  .contacts { margin-top: 18px; text-align: left; display: flex; flex-direction: column; gap: 6px; }
+  .contact { font-size: 13px; color: #5c5470; }
+  .social { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; justify-content: center; }
+  .pill { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid #e8e4f0; color: #5c5470; text-decoration: none; }
+  .footer { margin-top: 20px; font-size: 11px; font-family: monospace; color: #8b839c; }
+  {{{embedStyles}}}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="avatar">{{{avatarHtml}}}</div>
+    {{{logoHtml}}}
+    <h1>{{fullName}}</h1>
+    {{#if tagline}}<p class="tagline">{{tagline}}</p>{{/if}}
+    <p class="role">{{roleLine}}</p>
+    {{#if bio}}<p class="bio">{{bio}}</p>{{/if}}
+    <div class="contacts">{{{contactsHtml}}}</div>
+    {{{socialHtml}}}
+    <div class="footer">{{cardUrl}}</div>
+  </div>
+</body>
+</html>

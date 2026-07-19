@@ -7,6 +7,7 @@
       :theme-color="themeColor"
       :logo="logo"
       :background-image="backgroundImage"
+      live-preview
     />
     <div v-if="pageUrl" class="page-preview__url">
       <span class="page-preview__label">{{ t('common.publicUrl') }}</span>

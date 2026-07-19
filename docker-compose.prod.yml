@@ -1,0 +1,86 @@
+# Production-like full stack — build images and run locally before K8s deploy.
+# Usage:
+#   cp .env.docker-compose.example .env
+#   cp backend/.env.docker.example backend/.env.docker
+#   # Set the same DB_PASSWORD in both files, then generate APP_KEY (see docs/DEPLOYMENT.md)
+#   docker compose -f docker-compose.prod.yml up --build -d
+#
+# App: http://localhost:8080
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: qrscan
+      POSTGRES_USER: qrscan
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in project root .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U qrscan -d qrscan']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - backend/.env.docker
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: qrscan
+      DB_USERNAME: qrscan
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      RUN_MIGRATIONS: 'true'
+    volumes:
+      - api_storage:/var/www/html/storage/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  queue:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - backend/.env.docker
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: qrscan
+      DB_USERNAME: qrscan
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      RUN_MIGRATIONS: 'false'
+    command: ['php', 'artisan', 'queue:work', '--sleep=3', '--tries=3', '--max-time=3600']
+    volumes:
+      - api_storage:/var/www/html/storage/app
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - '8080:8080'
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  api_storage:
